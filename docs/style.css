@@ -275,3 +275,26 @@ nav {
   color: var(--primary);
   background: #ecfdf5;
 }
+
+/* Mobile Optimization for screens smaller than 768px */
+@media (max-width: 768px) {
+  /* 1. Shrink the giant header */
+  h1 {
+    font-size: 2rem; /* Was likely 3.5rem+ */
+    line-height: 1.2;
+    margin-bottom: 1rem;
+  }
+
+  /* 2. Add breathing room on the sides */
+  body,
+  .container {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  /* 3. Make the strategy cards feel less "heavy" */
+  .card,
+  .strategy-item {
+    padding: 1.5rem; /* Reduce internal padding if it's too big */
+  }
+}
