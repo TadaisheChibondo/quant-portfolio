@@ -1,0 +1,277 @@
+:root {
+  --primary: #10b981; /* Profit Green */
+  --danger: #ef4444; /* Loss Red */
+  --dark: #1f2937;
+  --light: #f3f4f6;
+  --card-bg: #ffffff;
+}
+
+body {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  background-color: var(--light);
+  color: var(--dark);
+  margin: 0;
+  padding-bottom: 50px;
+}
+
+nav {
+  background: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.logo {
+  font-weight: 700;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.badge {
+  background: #eff6ff;
+  color: #3b82f6;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.portfolio-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin: 40px 0;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.portfolio-summary {
+  display: flex;
+  gap: 30px;
+  background: white;
+  padding: 15px 25px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.sum-item label {
+  display: block;
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+.sum-item span {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.text-green {
+  color: var(--primary);
+}
+
+.strategy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 25px;
+}
+
+/* The Strategy Card */
+.card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s;
+  border: 1px solid #e5e7eb;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.card-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+.status-dot {
+  height: 8px;
+  width: 8px;
+  background-color: var(--primary);
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+}
+.status {
+  font-size: 0.8rem;
+  color: #6b7280;
+  background: #f9fafb;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.card-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+.stat div:first-child {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.stat div:last-child {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.chart-container {
+  position: relative;
+  height: 100px;
+  width: 100%;
+}
+
+/* Add to bottom of style.css */
+.strategy-select-card {
+  text-decoration: none;
+  color: inherit;
+  text-align: left;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+.strategy-select-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-5px);
+}
+.icon-box {
+  font-size: 2.5rem;
+  color: var(--primary);
+  margin-bottom: 15px;
+}
+.btn-link {
+  display: inline-block;
+  margin-top: 15px;
+  color: var(--primary);
+  font-weight: 600;
+}
+/* Add to bottom of style.css */
+.audit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 10px;
+  width: 100%;
+  box-sizing: border-box; /* Ensures padding doesn't break width */
+  text-decoration: none;
+  color: #4b5563;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.2s;
+  background-color: #f9fafb;
+}
+
+.audit-btn:hover {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+  color: var(--dark);
+}
+/* --- ABOUT PAGE STYLES --- */
+
+/* Comparison Table */
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+.comparison-table th,
+.comparison-table td {
+  padding: 20px 25px;
+  border-bottom: 1px solid #e5e7eb;
+}
+.comparison-table th {
+  background-color: #f9fafb;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+.comparison-table tr:last-child td {
+  border-bottom: none;
+}
+.feature-title {
+  font-weight: 600;
+  color: var(--dark);
+}
+
+/* Profile Section */
+.profile-card {
+  display: flex;
+  gap: 30px;
+  align-items: center;
+}
+.role {
+  color: var(--primary);
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+.profile-text p {
+  line-height: 1.6;
+  color: #4b5563;
+  margin-bottom: 15px;
+}
+.skills-list {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+.skill-tag {
+  background: #f3f4f6;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: #4b5563;
+  font-weight: 500;
+  border: 1px solid #e5e7eb;
+}
+
+/* Nav Link Active State */
+.nav-links {
+  display: flex;
+  gap: 20px;
+}
+.nav-links a {
+  text-decoration: none;
+  color: #6b7280;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+.nav-links a:hover {
+  background: #f3f4f6;
+  color: var(--dark);
+}
+.nav-links a.active {
+  color: var(--primary);
+  background: #ecfdf5;
+}

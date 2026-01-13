@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chibondo Quant Fund</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  </head>
+  <body>
+    <nav>
+      <div class="logo">
+        <i class="ph-fill ph-trend-up"></i> T. Chibondo
+        <span class="badge">Quant Fund</span>
+      </div>
+      <div class="nav-links">
+        <a href="index.html" class="active">Strategies</a>
+        <a href="about.html">Philosophy & About</a>
+      </div>
+    </nav>
+
+    <div class="container" style="text-align: center; margin-top: 60px">
+      <h1 style="font-size: 3rem; margin-bottom: 10px">
+        Algorithmic Trading Strategies
+      </h1>
+      <p class="subtitle" style="max-width: 600px; margin: 0 auto 50px auto">
+        Professional automated trading systems designed for synthetic indices.
+        Select a strategy below to view live performance data.
+      </p>
+
+      <div class="strategy-grid" id="landing-grid">
+        <a
+          href="strategy.html?type=Trend Continuation"
+          class="card strategy-select-card"
+        >
+          <div class="icon-box"><i class="ph ph-steps"></i></div>
+          <h2>Trend Continuation</h2>
+          <p>
+            A conservative trend-following system designed to compound gains
+            while protecting capital.
+          </p>
+          <span class="btn-link">View Performance &rarr;</span>
+        </a>
+        <a
+          href="strategy.html?type=Trendline Scalper"
+          class="card strategy-select-card"
+        >
+          <div class="icon-box"><i class="ph ph-chart-line-up"></i></div>
+          <h2>Trendline Scalper</h2>
+          <p>
+            High-frequency scalping strategy targeting 5.0x ATR zones with RSI
+            filtering.
+          </p>
+          <span class="btn-link">View Performance &rarr;</span>
+        </a>
+
+        <a
+          href="strategy.html?type=Spike Detector"
+          class="card strategy-select-card"
+        >
+          <div class="icon-box"><i class="ph ph-lightning"></i></div>
+          <h2>Spike Detector</h2>
+          <p>
+            Volatility capture system designed to profit from sudden market
+            spikes.
+          </p>
+          <span class="btn-link">View Performance &rarr;</span>
+        </a>
+      </div>
+    </div>
+  </body>
+</html>

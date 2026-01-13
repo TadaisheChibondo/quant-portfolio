@@ -1,0 +1,3658 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Strategy Report: Crash900</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      body {
+        font-family: "Segoe UI", system-ui, sans-serif;
+        margin: 0;
+        background-color: #f0f2f5;
+        color: #333;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 40px auto;
+        background: white;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      }
+      h1 {
+        color: #1a202c;
+        text-align: center;
+        margin: 0 0 10px 0;
+        font-size: 2.2em;
+      }
+      .subtitle {
+        text-align: center;
+        color: #718096;
+        margin-bottom: 40px;
+        font-weight: 500;
+      }
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+      }
+      .stat-card {
+        background: white;
+        padding: 25px 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        text-align: center;
+      }
+      .stat-card.profit-card {
+        border-left: 5px solid #2ecc71;
+      }
+      .stat-card.win-card {
+        border-left: 5px solid #3498db;
+      }
+      .stat-card.balance-card {
+        border-left: 5px solid #3498db;
+      }
+      .stat-card.dd-card {
+        border-left: 5px solid #e74c3c;
+      }
+      .stat-card.trade-card {
+        border-left: 5px solid #95a5a6;
+      }
+      .stat-label {
+        font-size: 0.85em;
+        color: #7f8c8d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+      }
+      .stat-val {
+        font-size: 1.8em;
+        font-weight: 700;
+        color: #2d3748;
+        margin-top: 8px;
+      }
+      .stat-val.green {
+        color: #27ae60;
+      }
+      .stat-val.red {
+        color: #c0392b;
+      }
+      .chart-section {
+        margin: 40px 0;
+        padding: 20px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border: 1px solid #edf2f7;
+      }
+      canvas {
+        max-height: 400px;
+        width: 100%;
+      }
+      .section-title {
+        font-size: 1.4em;
+        color: #2d3748;
+        margin: 40px 0 20px 0;
+        font-weight: 700;
+        border-bottom: 2px solid #edf2f7;
+        padding-bottom: 10px;
+      }
+      .monthly-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 15px;
+      }
+      .month-card {
+        padding: 20px 15px;
+        border-radius: 10px;
+        color: white;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+      }
+      .month-card:hover {
+        transform: translateY(-3px);
+      }
+      .month-card.green {
+        background: linear-gradient(135deg, #2ecc71, #27ae60);
+      }
+      .month-card.red {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+      }
+      .month-date {
+        font-size: 0.9em;
+        font-weight: 600;
+        opacity: 0.95;
+        margin-bottom: 8px;
+      }
+      .month-profit {
+        font-size: 1.5em;
+        font-weight: 800;
+        margin-bottom: 8px;
+      }
+      .month-detail {
+        font-size: 0.8em;
+        opacity: 0.9;
+        margin-bottom: 2px;
+      }
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 10px;
+        font-size: 0.9em;
+      }
+      th {
+        background-color: #f8fafc;
+        color: #4a5568;
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid #edf2f7;
+      }
+      td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #edf2f7;
+        color: #4a5568;
+      }
+      tr:hover td {
+        background-color: #f7fafc;
+      }
+      .win-text {
+        color: #27ae60;
+        font-weight: 600;
+      }
+      .loss-text {
+        color: #e74c3c;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="logo">
+        <a href="index.html" style="text-decoration: none; color: inherit">
+          <i class="ph-fill ph-trend-up"></i> T. Chibondo
+          <span class="badge">Quant Fund</span>
+        </a>
+      </div>
+      <div class="nav-links">
+        <a href="index.html">Strategies</a>
+        <a href="about.html" class="active">Philosophy & About</a>
+      </div>
+    </nav>
+    <div class="container">
+      <h1>Strategy Report <span style="color: #3498db">Crash900</span></h1>
+      <div class="subtitle">
+        Start Date: 2025-01-01 | EMA 20/220 | BB Filter: OFF | Trend Filter: H1
+        SMA 100
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card profit-card">
+          <div class="stat-label">Net Profit</div>
+          <div class="stat-val green">$212.16</div>
+        </div>
+        <div class="stat-card win-card">
+          <div class="stat-label">Win Rate</div>
+          <div class="stat-val">34.7%</div>
+        </div>
+        <div class="stat-card balance-card">
+          <div class="stat-label">Final Balance</div>
+          <div class="stat-val">$262.16</div>
+        </div>
+        <div class="stat-card dd-card">
+          <div class="stat-label">Max Drawdown</div>
+          <div class="stat-val red">-$50.44</div>
+        </div>
+        <div class="stat-card trade-card">
+          <div class="stat-label">Total Trades</div>
+          <div class="stat-val">291</div>
+        </div>
+      </div>
+
+      <div class="chart-section">
+        <canvas id="equityChart"></canvas>
+      </div>
+
+      <h2 class="section-title">Monthly Performance</h2>
+      <div class="monthly-grid">
+        <div class="month-card green">
+          <div class="month-date">2025-01</div>
+          <div class="month-profit">$24.95</div>
+          <div class="month-detail">29 Trades</div>
+          <div class="month-detail">Max DD: -$11.25</div>
+        </div>
+
+        <div class="month-card red">
+          <div class="month-date">2025-02</div>
+          <div class="month-profit">$-14.27</div>
+          <div class="month-detail">31 Trades</div>
+          <div class="month-detail">Max DD: -$24.69</div>
+        </div>
+
+        <div class="month-card green">
+          <div class="month-date">2025-03</div>
+          <div class="month-profit">$13.55</div>
+          <div class="month-detail">24 Trades</div>
+          <div class="month-detail">Max DD: -$9.24</div>
+        </div>
+
+        <div class="month-card red">
+          <div class="month-date">2025-04</div>
+          <div class="month-profit">$-9.35</div>
+          <div class="month-detail">31 Trades</div>
+          <div class="month-detail">Max DD: -$32.88</div>
+        </div>
+
+        <div class="month-card green">
+          <div class="month-date">2025-05</div>
+          <div class="month-profit">$98.22</div>
+          <div class="month-detail">39 Trades</div>
+          <div class="month-detail">Max DD: -$15.58</div>
+        </div>
+
+        <div class="month-card green">
+          <div class="month-date">2025-06</div>
+          <div class="month-profit">$34.38</div>
+          <div class="month-detail">27 Trades</div>
+          <div class="month-detail">Max DD: -$20.92</div>
+        </div>
+
+        <div class="month-card green">
+          <div class="month-date">2025-07</div>
+          <div class="month-profit">$14.96</div>
+          <div class="month-detail">34 Trades</div>
+          <div class="month-detail">Max DD: -$26.38</div>
+        </div>
+
+        <div class="month-card red">
+          <div class="month-date">2025-08</div>
+          <div class="month-profit">$-8.28</div>
+          <div class="month-detail">14 Trades</div>
+          <div class="month-detail">Max DD: -$13.48</div>
+        </div>
+
+        <div class="month-card red">
+          <div class="month-date">2025-09</div>
+          <div class="month-profit">$-12.09</div>
+          <div class="month-detail">6 Trades</div>
+          <div class="month-detail">Max DD: -$15.58</div>
+        </div>
+
+        <div class="month-card green">
+          <div class="month-date">2025-10</div>
+          <div class="month-profit">$29.22</div>
+          <div class="month-detail">33 Trades</div>
+          <div class="month-detail">Max DD: -$42.69</div>
+        </div>
+
+        <div class="month-card green">
+          <div class="month-date">2025-11</div>
+          <div class="month-profit">$40.87</div>
+          <div class="month-detail">23 Trades</div>
+          <div class="month-detail">Max DD: -$12.76</div>
+        </div>
+      </div>
+
+      <h2 class="section-title">Trade History</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Time</th>
+            <th>Type</th>
+            <th>Reason</th>
+            <th>Entry</th>
+            <th>Exit</th>
+            <th>PnL</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>2025-01-01 15:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12509.20</td>
+            <td>12455.18</td>
+            <td class="win-text">$1.43</td>
+            <td>$51.43</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>2025-01-01 21:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12486.51</td>
+            <td>12498.91</td>
+            <td class="loss-text">$-2.48</td>
+            <td>$48.95</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>2025-01-02 02:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12549.56</td>
+            <td>12561.87</td>
+            <td class="loss-text">$-2.46</td>
+            <td>$46.49</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>2025-01-02 20:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12415.80</td>
+            <td>12399.49</td>
+            <td class="win-text">$4.14</td>
+            <td>$50.62</td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>2025-01-07 19:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12328.85</td>
+            <td>12319.44</td>
+            <td class="win-text">$3.29</td>
+            <td>$53.92</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td>2025-01-08 01:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12268.52</td>
+            <td>12278.27</td>
+            <td class="loss-text">$-2.58</td>
+            <td>$51.34</td>
+          </tr>
+          <tr>
+            <td>7</td>
+            <td>2025-01-09 18:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12374.00</td>
+            <td>12329.56</td>
+            <td class="win-text">$6.95</td>
+            <td>$58.30</td>
+          </tr>
+          <tr>
+            <td>8</td>
+            <td>2025-01-14 21:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12878.18</td>
+            <td>12852.10</td>
+            <td class="win-text">$6.89</td>
+            <td>$65.19</td>
+          </tr>
+          <tr>
+            <td>9</td>
+            <td>2025-01-15 05:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12948.78</td>
+            <td>12961.11</td>
+            <td class="loss-text">$-2.47</td>
+            <td>$62.72</td>
+          </tr>
+          <tr>
+            <td>10</td>
+            <td>2025-01-15 06:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12954.90</td>
+            <td>12939.06</td>
+            <td class="win-text">$4.30</td>
+            <td>$67.02</td>
+          </tr>
+          <tr>
+            <td>11</td>
+            <td>2025-01-15 10:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12899.54</td>
+            <td>12918.02</td>
+            <td class="loss-text">$-3.70</td>
+            <td>$63.32</td>
+          </tr>
+          <tr>
+            <td>12</td>
+            <td>2025-01-15 15:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12959.51</td>
+            <td>12965.14</td>
+            <td class="loss-text">$-1.13</td>
+            <td>$62.20</td>
+          </tr>
+          <tr>
+            <td>13</td>
+            <td>2025-01-15 17:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12955.84</td>
+            <td>12969.09</td>
+            <td class="loss-text">$-1.00</td>
+            <td>$61.19</td>
+          </tr>
+          <tr>
+            <td>14</td>
+            <td>2025-01-16 17:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12933.66</td>
+            <td>12946.69</td>
+            <td class="loss-text">$-2.61</td>
+            <td>$58.59</td>
+          </tr>
+          <tr>
+            <td>15</td>
+            <td>2025-01-16 19:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12915.64</td>
+            <td>12931.83</td>
+            <td class="loss-text">$-1.52</td>
+            <td>$57.07</td>
+          </tr>
+          <tr>
+            <td>16</td>
+            <td>2025-01-19 18:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12628.14</td>
+            <td>12633.25</td>
+            <td class="loss-text">$-1.02</td>
+            <td>$56.05</td>
+          </tr>
+          <tr>
+            <td>17</td>
+            <td>2025-01-19 23:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12634.74</td>
+            <td>12579.49</td>
+            <td class="win-text">$11.68</td>
+            <td>$67.73</td>
+          </tr>
+          <tr>
+            <td>18</td>
+            <td>2025-01-21 16:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12050.76</td>
+            <td>12062.51</td>
+            <td class="loss-text">$-2.35</td>
+            <td>$65.38</td>
+          </tr>
+          <tr>
+            <td>19</td>
+            <td>2025-01-23 03:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11958.00</td>
+            <td>11970.54</td>
+            <td class="loss-text">$-2.51</td>
+            <td>$62.87</td>
+          </tr>
+          <tr>
+            <td>20</td>
+            <td>2025-01-23 06:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11958.37</td>
+            <td>11859.98</td>
+            <td class="win-text">$20.99</td>
+            <td>$83.86</td>
+          </tr>
+          <tr>
+            <td>21</td>
+            <td>2025-01-23 11:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11837.92</td>
+            <td>11821.55</td>
+            <td class="loss-text">$-2.91</td>
+            <td>$80.95</td>
+          </tr>
+          <tr>
+            <td>22</td>
+            <td>2025-01-23 13:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11815.70</td>
+            <td>11780.91</td>
+            <td class="win-text">$5.06</td>
+            <td>$86.01</td>
+          </tr>
+          <tr>
+            <td>23</td>
+            <td>2025-01-29 03:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12266.32</td>
+            <td>12286.43</td>
+            <td class="loss-text">$-4.02</td>
+            <td>$81.99</td>
+          </tr>
+          <tr>
+            <td>24</td>
+            <td>2025-01-30 05:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12193.04</td>
+            <td>12179.37</td>
+            <td class="win-text">$4.21</td>
+            <td>$86.20</td>
+          </tr>
+          <tr>
+            <td>25</td>
+            <td>2025-01-30 06:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12180.59</td>
+            <td>12186.53</td>
+            <td class="loss-text">$-1.19</td>
+            <td>$85.01</td>
+          </tr>
+          <tr>
+            <td>26</td>
+            <td>2025-01-30 07:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12188.84</td>
+            <td>12201.02</td>
+            <td class="loss-text">$-2.44</td>
+            <td>$82.58</td>
+          </tr>
+          <tr>
+            <td>27</td>
+            <td>2025-01-30 10:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12179.50</td>
+            <td>12169.29</td>
+            <td class="win-text">$0.06</td>
+            <td>$82.63</td>
+          </tr>
+          <tr>
+            <td>28</td>
+            <td>2025-01-30 19:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12118.07</td>
+            <td>12142.27</td>
+            <td class="loss-text">$-4.84</td>
+            <td>$77.79</td>
+          </tr>
+          <tr>
+            <td>29</td>
+            <td>2025-01-31 09:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12101.68</td>
+            <td>12115.89</td>
+            <td class="loss-text">$-2.84</td>
+            <td>$74.95</td>
+          </tr>
+          <tr>
+            <td>30</td>
+            <td>2025-02-04 10:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12196.24</td>
+            <td>12135.96</td>
+            <td class="win-text">$8.13</td>
+            <td>$83.08</td>
+          </tr>
+          <tr>
+            <td>31</td>
+            <td>2025-02-04 16:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12102.67</td>
+            <td>12115.04</td>
+            <td class="loss-text">$-2.47</td>
+            <td>$80.61</td>
+          </tr>
+          <tr>
+            <td>32</td>
+            <td>2025-02-04 18:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12091.90</td>
+            <td>12089.69</td>
+            <td class="win-text">$2.24</td>
+            <td>$82.84</td>
+          </tr>
+          <tr>
+            <td>33</td>
+            <td>2025-02-04 20:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12042.21</td>
+            <td>12044.93</td>
+            <td class="win-text">$0.78</td>
+            <td>$83.62</td>
+          </tr>
+          <tr>
+            <td>34</td>
+            <td>2025-02-04 22:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12044.61</td>
+            <td>12057.12</td>
+            <td class="loss-text">$-2.43</td>
+            <td>$81.19</td>
+          </tr>
+          <tr>
+            <td>35</td>
+            <td>2025-02-05 11:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11894.57</td>
+            <td>11892.69</td>
+            <td class="win-text">$2.11</td>
+            <td>$83.31</td>
+          </tr>
+          <tr>
+            <td>36</td>
+            <td>2025-02-05 22:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11986.49</td>
+            <td>11995.10</td>
+            <td class="loss-text">$-0.29</td>
+            <td>$83.02</td>
+          </tr>
+          <tr>
+            <td>37</td>
+            <td>2025-02-05 23:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11980.83</td>
+            <td>11993.00</td>
+            <td class="loss-text">$-2.43</td>
+            <td>$80.58</td>
+          </tr>
+          <tr>
+            <td>38</td>
+            <td>2025-02-06 00:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11964.08</td>
+            <td>11973.15</td>
+            <td class="loss-text">$-0.47</td>
+            <td>$80.11</td>
+          </tr>
+          <tr>
+            <td>39</td>
+            <td>2025-02-09 18:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12066.24</td>
+            <td>12084.21</td>
+            <td class="loss-text">$-3.59</td>
+            <td>$76.52</td>
+          </tr>
+          <tr>
+            <td>40</td>
+            <td>2025-02-10 18:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12111.63</td>
+            <td>12123.97</td>
+            <td class="loss-text">$-2.47</td>
+            <td>$74.05</td>
+          </tr>
+          <tr>
+            <td>41</td>
+            <td>2025-02-10 19:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12085.18</td>
+            <td>12094.21</td>
+            <td class="loss-text">$-1.77</td>
+            <td>$72.28</td>
+          </tr>
+          <tr>
+            <td>42</td>
+            <td>2025-02-10 21:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12090.23</td>
+            <td>12108.56</td>
+            <td class="loss-text">$-3.67</td>
+            <td>$68.62</td>
+          </tr>
+          <tr>
+            <td>43</td>
+            <td>2025-02-10 23:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12078.31</td>
+            <td>12110.01</td>
+            <td class="loss-text">$-5.02</td>
+            <td>$63.60</td>
+          </tr>
+          <tr>
+            <td>44</td>
+            <td>2025-02-11 05:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12114.89</td>
+            <td>12131.16</td>
+            <td class="loss-text">$-1.42</td>
+            <td>$62.18</td>
+          </tr>
+          <tr>
+            <td>45</td>
+            <td>2025-02-11 20:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12082.32</td>
+            <td>12086.65</td>
+            <td class="loss-text">$-0.87</td>
+            <td>$61.31</td>
+          </tr>
+          <tr>
+            <td>46</td>
+            <td>2025-02-12 16:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12077.97</td>
+            <td>12079.77</td>
+            <td class="loss-text">$-0.36</td>
+            <td>$60.95</td>
+          </tr>
+          <tr>
+            <td>47</td>
+            <td>2025-02-13 02:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12079.05</td>
+            <td>12089.16</td>
+            <td class="loss-text">$-2.02</td>
+            <td>$58.93</td>
+          </tr>
+          <tr>
+            <td>48</td>
+            <td>2025-02-18 13:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12062.39</td>
+            <td>12033.94</td>
+            <td class="win-text">$6.13</td>
+            <td>$65.06</td>
+          </tr>
+          <tr>
+            <td>49</td>
+            <td>2025-02-18 20:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12028.82</td>
+            <td>11996.54</td>
+            <td class="win-text">$7.79</td>
+            <td>$72.85</td>
+          </tr>
+          <tr>
+            <td>50</td>
+            <td>2025-02-19 00:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12024.48</td>
+            <td>12031.12</td>
+            <td class="loss-text">$-1.33</td>
+            <td>$71.52</td>
+          </tr>
+          <tr>
+            <td>51</td>
+            <td>2025-02-20 06:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12008.23</td>
+            <td>11966.70</td>
+            <td class="win-text">$7.85</td>
+            <td>$79.37</td>
+          </tr>
+          <tr>
+            <td>52</td>
+            <td>2025-02-20 11:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11953.99</td>
+            <td>11964.55</td>
+            <td class="loss-text">$-2.11</td>
+            <td>$77.26</td>
+          </tr>
+          <tr>
+            <td>53</td>
+            <td>2025-02-20 14:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11943.62</td>
+            <td>11944.13</td>
+            <td class="win-text">$0.32</td>
+            <td>$77.58</td>
+          </tr>
+          <tr>
+            <td>54</td>
+            <td>2025-02-20 23:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12016.44</td>
+            <td>12008.70</td>
+            <td class="win-text">$2.62</td>
+            <td>$80.20</td>
+          </tr>
+          <tr>
+            <td>55</td>
+            <td>2025-02-23 18:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11979.96</td>
+            <td>11989.49</td>
+            <td class="loss-text">$-1.91</td>
+            <td>$78.29</td>
+          </tr>
+          <tr>
+            <td>56</td>
+            <td>2025-02-23 20:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11974.24</td>
+            <td>11955.73</td>
+            <td class="win-text">$2.40</td>
+            <td>$80.69</td>
+          </tr>
+          <tr>
+            <td>57</td>
+            <td>2025-02-24 03:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11986.83</td>
+            <td>12010.17</td>
+            <td class="loss-text">$-4.67</td>
+            <td>$76.02</td>
+          </tr>
+          <tr>
+            <td>58</td>
+            <td>2025-02-28 14:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12129.96</td>
+            <td>12156.88</td>
+            <td class="loss-text">$-5.84</td>
+            <td>$70.18</td>
+          </tr>
+          <tr>
+            <td>59</td>
+            <td>2025-02-28 16:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12112.24</td>
+            <td>12144.65</td>
+            <td class="loss-text">$-5.42</td>
+            <td>$64.76</td>
+          </tr>
+          <tr>
+            <td>60</td>
+            <td>2025-02-28 19:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12127.33</td>
+            <td>12155.18</td>
+            <td class="loss-text">$-4.08</td>
+            <td>$60.68</td>
+          </tr>
+          <tr>
+            <td>61</td>
+            <td>2025-03-06 06:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12238.57</td>
+            <td>12247.13</td>
+            <td class="loss-text">$-1.71</td>
+            <td>$58.97</td>
+          </tr>
+          <tr>
+            <td>62</td>
+            <td>2025-03-06 15:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12175.41</td>
+            <td>12187.44</td>
+            <td class="loss-text">$-2.41</td>
+            <td>$56.56</td>
+          </tr>
+          <tr>
+            <td>63</td>
+            <td>2025-03-06 15:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12173.59</td>
+            <td>12185.26</td>
+            <td class="loss-text">$-2.33</td>
+            <td>$54.23</td>
+          </tr>
+          <tr>
+            <td>64</td>
+            <td>2025-03-06 17:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12177.95</td>
+            <td>12162.13</td>
+            <td class="win-text">$3.23</td>
+            <td>$57.46</td>
+          </tr>
+          <tr>
+            <td>65</td>
+            <td>2025-03-07 01:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12066.63</td>
+            <td>12048.23</td>
+            <td class="win-text">$5.59</td>
+            <td>$63.05</td>
+          </tr>
+          <tr>
+            <td>66</td>
+            <td>2025-03-07 02:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12050.80</td>
+            <td>12062.80</td>
+            <td class="loss-text">$-2.40</td>
+            <td>$60.64</td>
+          </tr>
+          <tr>
+            <td>67</td>
+            <td>2025-03-07 03:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12051.91</td>
+            <td>12052.47</td>
+            <td class="win-text">$0.25</td>
+            <td>$60.90</td>
+          </tr>
+          <tr>
+            <td>68</td>
+            <td>2025-03-07 14:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11997.68</td>
+            <td>12005.21</td>
+            <td class="loss-text">$-3.16</td>
+            <td>$57.74</td>
+          </tr>
+          <tr>
+            <td>69</td>
+            <td>2025-03-09 22:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11721.53</td>
+            <td>11747.79</td>
+            <td class="loss-text">$-3.86</td>
+            <td>$53.88</td>
+          </tr>
+          <tr>
+            <td>70</td>
+            <td>2025-03-09 23:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11714.84</td>
+            <td>11692.39</td>
+            <td class="win-text">$5.65</td>
+            <td>$59.54</td>
+          </tr>
+          <tr>
+            <td>71</td>
+            <td>2025-03-10 03:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11700.86</td>
+            <td>11712.38</td>
+            <td class="loss-text">$-2.30</td>
+            <td>$57.23</td>
+          </tr>
+          <tr>
+            <td>72</td>
+            <td>2025-03-12 08:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11782.57</td>
+            <td>11809.16</td>
+            <td class="loss-text">$-3.43</td>
+            <td>$53.81</td>
+          </tr>
+          <tr>
+            <td>73</td>
+            <td>2025-03-12 20:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11667.56</td>
+            <td>11625.79</td>
+            <td class="win-text">$5.01</td>
+            <td>$58.82</td>
+          </tr>
+          <tr>
+            <td>74</td>
+            <td>2025-03-12 22:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11651.25</td>
+            <td>11660.80</td>
+            <td class="loss-text">$-1.91</td>
+            <td>$56.91</td>
+          </tr>
+          <tr>
+            <td>75</td>
+            <td>2025-03-12 23:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11650.32</td>
+            <td>11661.82</td>
+            <td class="loss-text">$-2.30</td>
+            <td>$54.61</td>
+          </tr>
+          <tr>
+            <td>76</td>
+            <td>2025-03-13 08:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11608.09</td>
+            <td>11486.07</td>
+            <td class="win-text">$23.31</td>
+            <td>$77.92</td>
+          </tr>
+          <tr>
+            <td>77</td>
+            <td>2025-03-13 13:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>11520.51</td>
+            <td>11534.00</td>
+            <td class="loss-text">$-0.55</td>
+            <td>$77.37</td>
+          </tr>
+          <tr>
+            <td>78</td>
+            <td>2025-03-22 16:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12234.68</td>
+            <td>12247.15</td>
+            <td class="loss-text">$-2.49</td>
+            <td>$74.87</td>
+          </tr>
+          <tr>
+            <td>79</td>
+            <td>2025-03-22 18:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12227.21</td>
+            <td>12200.98</td>
+            <td class="win-text">$5.57</td>
+            <td>$80.45</td>
+          </tr>
+          <tr>
+            <td>80</td>
+            <td>2025-03-22 21:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12203.38</td>
+            <td>12195.08</td>
+            <td class="win-text">$2.59</td>
+            <td>$83.03</td>
+          </tr>
+          <tr>
+            <td>81</td>
+            <td>2025-03-23 16:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12089.93</td>
+            <td>12098.43</td>
+            <td class="loss-text">$-1.70</td>
+            <td>$81.33</td>
+          </tr>
+          <tr>
+            <td>82</td>
+            <td>2025-03-23 18:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12091.69</td>
+            <td>12103.91</td>
+            <td class="loss-text">$-2.44</td>
+            <td>$78.89</td>
+          </tr>
+          <tr>
+            <td>83</td>
+            <td>2025-03-31 21:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12603.47</td>
+            <td>12616.49</td>
+            <td class="loss-text">$-2.60</td>
+            <td>$76.28</td>
+          </tr>
+          <tr>
+            <td>84</td>
+            <td>2025-03-31 23:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12597.13</td>
+            <td>12615.49</td>
+            <td class="loss-text">$-2.06</td>
+            <td>$74.23</td>
+          </tr>
+          <tr>
+            <td>85</td>
+            <td>2025-04-03 06:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12673.05</td>
+            <td>12686.09</td>
+            <td class="loss-text">$-2.61</td>
+            <td>$71.62</td>
+          </tr>
+          <tr>
+            <td>86</td>
+            <td>2025-04-08 04:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12727.26</td>
+            <td>12730.21</td>
+            <td class="win-text">$0.93</td>
+            <td>$72.55</td>
+          </tr>
+          <tr>
+            <td>87</td>
+            <td>2025-04-08 05:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12712.35</td>
+            <td>12737.80</td>
+            <td class="loss-text">$-5.09</td>
+            <td>$67.46</td>
+          </tr>
+          <tr>
+            <td>88</td>
+            <td>2025-04-10 09:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12704.91</td>
+            <td>12717.45</td>
+            <td class="loss-text">$-2.51</td>
+            <td>$64.95</td>
+          </tr>
+          <tr>
+            <td>89</td>
+            <td>2025-04-13 10:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12773.07</td>
+            <td>12760.03</td>
+            <td class="win-text">$3.92</td>
+            <td>$68.87</td>
+          </tr>
+          <tr>
+            <td>90</td>
+            <td>2025-04-13 15:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12689.19</td>
+            <td>12710.42</td>
+            <td class="loss-text">$-2.57</td>
+            <td>$66.30</td>
+          </tr>
+          <tr>
+            <td>91</td>
+            <td>2025-04-13 15:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12682.11</td>
+            <td>12707.71</td>
+            <td class="loss-text">$-5.12</td>
+            <td>$61.18</td>
+          </tr>
+          <tr>
+            <td>92</td>
+            <td>2025-04-13 18:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12701.68</td>
+            <td>12621.61</td>
+            <td class="win-text">$15.57</td>
+            <td>$76.74</td>
+          </tr>
+          <tr>
+            <td>93</td>
+            <td>2025-04-13 21:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12621.51</td>
+            <td>12658.99</td>
+            <td class="loss-text">$-5.97</td>
+            <td>$70.78</td>
+          </tr>
+          <tr>
+            <td>94</td>
+            <td>2025-04-14 05:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12741.26</td>
+            <td>12754.48</td>
+            <td class="loss-text">$-2.64</td>
+            <td>$68.13</td>
+          </tr>
+          <tr>
+            <td>95</td>
+            <td>2025-04-14 08:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12762.36</td>
+            <td>12775.06</td>
+            <td class="loss-text">$-2.54</td>
+            <td>$65.59</td>
+          </tr>
+          <tr>
+            <td>96</td>
+            <td>2025-04-18 08:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13096.72</td>
+            <td>13102.24</td>
+            <td class="win-text">$0.69</td>
+            <td>$66.29</td>
+          </tr>
+          <tr>
+            <td>97</td>
+            <td>2025-04-18 09:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13106.93</td>
+            <td>13119.83</td>
+            <td class="loss-text">$-2.58</td>
+            <td>$63.71</td>
+          </tr>
+          <tr>
+            <td>98</td>
+            <td>2025-04-18 11:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13105.77</td>
+            <td>13014.06</td>
+            <td class="win-text">$16.71</td>
+            <td>$80.42</td>
+          </tr>
+          <tr>
+            <td>99</td>
+            <td>2025-04-18 21:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12945.82</td>
+            <td>12958.42</td>
+            <td class="loss-text">$-2.52</td>
+            <td>$77.90</td>
+          </tr>
+          <tr>
+            <td>100</td>
+            <td>2025-04-19 01:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13003.58</td>
+            <td>13016.68</td>
+            <td class="loss-text">$-2.62</td>
+            <td>$75.28</td>
+          </tr>
+          <tr>
+            <td>101</td>
+            <td>2025-04-19 04:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12993.13</td>
+            <td>13018.81</td>
+            <td class="loss-text">$-5.14</td>
+            <td>$70.14</td>
+          </tr>
+          <tr>
+            <td>102</td>
+            <td>2025-04-19 07:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13011.28</td>
+            <td>13044.65</td>
+            <td class="loss-text">$-6.07</td>
+            <td>$64.06</td>
+          </tr>
+          <tr>
+            <td>103</td>
+            <td>2025-04-21 01:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13045.35</td>
+            <td>13060.41</td>
+            <td class="loss-text">$-2.66</td>
+            <td>$61.40</td>
+          </tr>
+          <tr>
+            <td>104</td>
+            <td>2025-04-22 01:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12936.34</td>
+            <td>12928.17</td>
+            <td class="win-text">$3.28</td>
+            <td>$64.69</td>
+          </tr>
+          <tr>
+            <td>105</td>
+            <td>2025-04-22 02:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12899.39</td>
+            <td>12921.46</td>
+            <td class="loss-text">$-3.30</td>
+            <td>$61.39</td>
+          </tr>
+          <tr>
+            <td>106</td>
+            <td>2025-04-22 08:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12950.61</td>
+            <td>12962.92</td>
+            <td class="loss-text">$-2.46</td>
+            <td>$58.93</td>
+          </tr>
+          <tr>
+            <td>107</td>
+            <td>2025-04-22 17:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12870.80</td>
+            <td>12838.21</td>
+            <td class="win-text">$6.15</td>
+            <td>$65.08</td>
+          </tr>
+          <tr>
+            <td>108</td>
+            <td>2025-04-23 00:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12908.39</td>
+            <td>12930.82</td>
+            <td class="loss-text">$-4.49</td>
+            <td>$60.59</td>
+          </tr>
+          <tr>
+            <td>109</td>
+            <td>2025-04-24 04:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12831.56</td>
+            <td>12839.56</td>
+            <td class="loss-text">$-0.17</td>
+            <td>$60.42</td>
+          </tr>
+          <tr>
+            <td>110</td>
+            <td>2025-04-24 06:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12814.66</td>
+            <td>12844.14</td>
+            <td class="loss-text">$-4.03</td>
+            <td>$56.39</td>
+          </tr>
+          <tr>
+            <td>111</td>
+            <td>2025-04-24 06:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12828.09</td>
+            <td>12840.94</td>
+            <td class="loss-text">$-2.57</td>
+            <td>$53.82</td>
+          </tr>
+          <tr>
+            <td>112</td>
+            <td>2025-04-24 17:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12736.55</td>
+            <td>12757.41</td>
+            <td class="loss-text">$-4.17</td>
+            <td>$49.65</td>
+          </tr>
+          <tr>
+            <td>113</td>
+            <td>2025-04-24 19:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12775.07</td>
+            <td>12785.62</td>
+            <td class="loss-text">$-2.11</td>
+            <td>$47.54</td>
+          </tr>
+          <tr>
+            <td>114</td>
+            <td>2025-04-25 07:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12829.49</td>
+            <td>12735.55</td>
+            <td class="win-text">$19.88</td>
+            <td>$67.42</td>
+          </tr>
+          <tr>
+            <td>115</td>
+            <td>2025-04-28 18:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12886.72</td>
+            <td>12899.43</td>
+            <td class="loss-text">$-2.54</td>
+            <td>$64.87</td>
+          </tr>
+          <tr>
+            <td>116</td>
+            <td>2025-05-01 20:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13058.09</td>
+            <td>12901.39</td>
+            <td class="win-text">$33.10</td>
+            <td>$97.98</td>
+          </tr>
+          <tr>
+            <td>117</td>
+            <td>2025-05-02 01:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12941.73</td>
+            <td>12959.02</td>
+            <td class="loss-text">$-3.46</td>
+            <td>$94.52</td>
+          </tr>
+          <tr>
+            <td>118</td>
+            <td>2025-05-02 18:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12846.80</td>
+            <td>12854.29</td>
+            <td class="loss-text">$-1.50</td>
+            <td>$93.02</td>
+          </tr>
+          <tr>
+            <td>119</td>
+            <td>2025-05-02 19:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12848.09</td>
+            <td>12852.21</td>
+            <td class="loss-text">$-0.82</td>
+            <td>$92.20</td>
+          </tr>
+          <tr>
+            <td>120</td>
+            <td>2025-05-03 07:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12812.24</td>
+            <td>12824.98</td>
+            <td class="loss-text">$-2.55</td>
+            <td>$89.65</td>
+          </tr>
+          <tr>
+            <td>121</td>
+            <td>2025-05-03 15:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12803.55</td>
+            <td>12811.91</td>
+            <td class="loss-text">$-1.67</td>
+            <td>$87.98</td>
+          </tr>
+          <tr>
+            <td>122</td>
+            <td>2025-05-03 15:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12783.63</td>
+            <td>12809.49</td>
+            <td class="loss-text">$-5.17</td>
+            <td>$82.80</td>
+          </tr>
+          <tr>
+            <td>123</td>
+            <td>2025-05-04 23:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12906.69</td>
+            <td>12866.73</td>
+            <td class="win-text">$8.85</td>
+            <td>$91.66</td>
+          </tr>
+          <tr>
+            <td>124</td>
+            <td>2025-05-05 02:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12883.45</td>
+            <td>12868.97</td>
+            <td class="win-text">$4.69</td>
+            <td>$96.34</td>
+          </tr>
+          <tr>
+            <td>125</td>
+            <td>2025-05-11 19:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13860.42</td>
+            <td>13865.57</td>
+            <td class="loss-text">$-0.81</td>
+            <td>$95.53</td>
+          </tr>
+          <tr>
+            <td>126</td>
+            <td>2025-05-13 03:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13881.21</td>
+            <td>13825.84</td>
+            <td class="win-text">$5.32</td>
+            <td>$100.85</td>
+          </tr>
+          <tr>
+            <td>127</td>
+            <td>2025-05-13 10:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13867.77</td>
+            <td>13853.92</td>
+            <td class="win-text">$3.67</td>
+            <td>$104.52</td>
+          </tr>
+          <tr>
+            <td>128</td>
+            <td>2025-05-14 00:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13796.24</td>
+            <td>13737.50</td>
+            <td class="win-text">$13.49</td>
+            <td>$118.01</td>
+          </tr>
+          <tr>
+            <td>129</td>
+            <td>2025-05-14 07:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13813.77</td>
+            <td>13836.27</td>
+            <td class="loss-text">$-2.39</td>
+            <td>$115.62</td>
+          </tr>
+          <tr>
+            <td>130</td>
+            <td>2025-05-16 08:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13709.29</td>
+            <td>13660.69</td>
+            <td class="win-text">$10.70</td>
+            <td>$126.32</td>
+          </tr>
+          <tr>
+            <td>131</td>
+            <td>2025-05-16 15:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13602.77</td>
+            <td>13615.97</td>
+            <td class="loss-text">$-2.64</td>
+            <td>$123.68</td>
+          </tr>
+          <tr>
+            <td>132</td>
+            <td>2025-05-17 05:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13431.26</td>
+            <td>13452.57</td>
+            <td class="loss-text">$-4.26</td>
+            <td>$119.42</td>
+          </tr>
+          <tr>
+            <td>133</td>
+            <td>2025-05-17 08:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13446.89</td>
+            <td>13418.45</td>
+            <td class="win-text">$4.73</td>
+            <td>$124.15</td>
+          </tr>
+          <tr>
+            <td>134</td>
+            <td>2025-05-19 02:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13406.45</td>
+            <td>13419.64</td>
+            <td class="loss-text">$-2.64</td>
+            <td>$121.51</td>
+          </tr>
+          <tr>
+            <td>135</td>
+            <td>2025-05-21 11:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13377.26</td>
+            <td>13384.87</td>
+            <td class="loss-text">$-1.52</td>
+            <td>$119.99</td>
+          </tr>
+          <tr>
+            <td>136</td>
+            <td>2025-05-22 04:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13433.03</td>
+            <td>13307.55</td>
+            <td class="win-text">$25.80</td>
+            <td>$145.79</td>
+          </tr>
+          <tr>
+            <td>137</td>
+            <td>2025-05-22 09:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13332.03</td>
+            <td>13347.30</td>
+            <td class="loss-text">$-3.05</td>
+            <td>$142.74</td>
+          </tr>
+          <tr>
+            <td>138</td>
+            <td>2025-05-27 18:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13774.88</td>
+            <td>13735.56</td>
+            <td class="win-text">$7.88</td>
+            <td>$150.61</td>
+          </tr>
+          <tr>
+            <td>139</td>
+            <td>2025-05-27 21:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13737.94</td>
+            <td>13751.77</td>
+            <td class="loss-text">$-2.77</td>
+            <td>$147.85</td>
+          </tr>
+          <tr>
+            <td>140</td>
+            <td>2025-05-27 21:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13738.00</td>
+            <td>13751.71</td>
+            <td class="loss-text">$-2.74</td>
+            <td>$145.11</td>
+          </tr>
+          <tr>
+            <td>141</td>
+            <td>2025-05-28 00:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13734.07</td>
+            <td>13660.02</td>
+            <td class="win-text">$8.04</td>
+            <td>$153.14</td>
+          </tr>
+          <tr>
+            <td>142</td>
+            <td>2025-05-28 08:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13595.88</td>
+            <td>13573.86</td>
+            <td class="win-text">$6.41</td>
+            <td>$159.55</td>
+          </tr>
+          <tr>
+            <td>143</td>
+            <td>2025-05-28 10:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13574.67</td>
+            <td>13601.57</td>
+            <td class="loss-text">$-5.38</td>
+            <td>$154.17</td>
+          </tr>
+          <tr>
+            <td>144</td>
+            <td>2025-05-28 12:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13543.01</td>
+            <td>13531.34</td>
+            <td class="win-text">$4.34</td>
+            <td>$158.51</td>
+          </tr>
+          <tr>
+            <td>145</td>
+            <td>2025-05-28 17:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13535.89</td>
+            <td>13420.94</td>
+            <td class="win-text">$20.16</td>
+            <td>$178.67</td>
+          </tr>
+          <tr>
+            <td>146</td>
+            <td>2025-05-28 21:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13401.12</td>
+            <td>13439.93</td>
+            <td class="loss-text">$-6.10</td>
+            <td>$172.57</td>
+          </tr>
+          <tr>
+            <td>147</td>
+            <td>2025-05-28 22:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13432.63</td>
+            <td>13440.90</td>
+            <td class="win-text">$0.27</td>
+            <td>$172.84</td>
+          </tr>
+          <tr>
+            <td>148</td>
+            <td>2025-05-29 01:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13436.49</td>
+            <td>13414.33</td>
+            <td class="win-text">$5.03</td>
+            <td>$177.87</td>
+          </tr>
+          <tr>
+            <td>149</td>
+            <td>2025-05-29 06:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13359.97</td>
+            <td>13384.18</td>
+            <td class="loss-text">$-4.84</td>
+            <td>$173.03</td>
+          </tr>
+          <tr>
+            <td>150</td>
+            <td>2025-05-29 13:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13468.28</td>
+            <td>13481.64</td>
+            <td class="loss-text">$-2.67</td>
+            <td>$170.36</td>
+          </tr>
+          <tr>
+            <td>151</td>
+            <td>2025-05-29 14:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13470.08</td>
+            <td>13483.32</td>
+            <td class="loss-text">$-2.65</td>
+            <td>$167.71</td>
+          </tr>
+          <tr>
+            <td>152</td>
+            <td>2025-05-30 08:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13471.49</td>
+            <td>13491.59</td>
+            <td class="loss-text">$-4.02</td>
+            <td>$163.69</td>
+          </tr>
+          <tr>
+            <td>153</td>
+            <td>2025-05-30 11:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13469.11</td>
+            <td>13479.67</td>
+            <td class="loss-text">$-0.15</td>
+            <td>$163.54</td>
+          </tr>
+          <tr>
+            <td>154</td>
+            <td>2025-05-31 23:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13417.64</td>
+            <td>13424.33</td>
+            <td class="loss-text">$-0.45</td>
+            <td>$163.10</td>
+          </tr>
+          <tr>
+            <td>155</td>
+            <td>2025-06-01 07:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13372.58</td>
+            <td>13313.54</td>
+            <td class="win-text">$10.67</td>
+            <td>$173.77</td>
+          </tr>
+          <tr>
+            <td>156</td>
+            <td>2025-06-01 14:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13278.37</td>
+            <td>13290.87</td>
+            <td class="loss-text">$-2.50</td>
+            <td>$171.27</td>
+          </tr>
+          <tr>
+            <td>157</td>
+            <td>2025-06-02 18:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13362.39</td>
+            <td>13375.62</td>
+            <td class="loss-text">$-2.65</td>
+            <td>$168.62</td>
+          </tr>
+          <tr>
+            <td>158</td>
+            <td>2025-06-03 05:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13330.02</td>
+            <td>13357.39</td>
+            <td class="loss-text">$-5.47</td>
+            <td>$163.15</td>
+          </tr>
+          <tr>
+            <td>159</td>
+            <td>2025-06-08 15:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13523.36</td>
+            <td>13530.95</td>
+            <td class="loss-text">$-1.52</td>
+            <td>$161.63</td>
+          </tr>
+          <tr>
+            <td>160</td>
+            <td>2025-06-11 18:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13628.55</td>
+            <td>13642.20</td>
+            <td class="loss-text">$-2.73</td>
+            <td>$158.90</td>
+          </tr>
+          <tr>
+            <td>161</td>
+            <td>2025-06-12 14:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13567.42</td>
+            <td>13580.64</td>
+            <td class="loss-text">$-2.64</td>
+            <td>$156.26</td>
+          </tr>
+          <tr>
+            <td>162</td>
+            <td>2025-06-14 01:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13550.87</td>
+            <td>13567.94</td>
+            <td class="loss-text">$-3.41</td>
+            <td>$152.84</td>
+          </tr>
+          <tr>
+            <td>163</td>
+            <td>2025-06-14 02:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13514.65</td>
+            <td>13493.14</td>
+            <td class="win-text">$6.10</td>
+            <td>$158.94</td>
+          </tr>
+          <tr>
+            <td>164</td>
+            <td>2025-06-14 08:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13446.88</td>
+            <td>13455.94</td>
+            <td class="loss-text">$-1.81</td>
+            <td>$157.13</td>
+          </tr>
+          <tr>
+            <td>165</td>
+            <td>2025-06-14 11:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13448.09</td>
+            <td>13371.92</td>
+            <td class="win-text">$16.50</td>
+            <td>$173.63</td>
+          </tr>
+          <tr>
+            <td>166</td>
+            <td>2025-06-14 18:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13196.36</td>
+            <td>13222.89</td>
+            <td class="loss-text">$-5.30</td>
+            <td>$168.33</td>
+          </tr>
+          <tr>
+            <td>167</td>
+            <td>2025-06-15 08:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13218.96</td>
+            <td>13231.83</td>
+            <td class="loss-text">$-2.58</td>
+            <td>$165.75</td>
+          </tr>
+          <tr>
+            <td>168</td>
+            <td>2025-06-15 17:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13097.64</td>
+            <td>13012.31</td>
+            <td class="win-text">$14.91</td>
+            <td>$180.67</td>
+          </tr>
+          <tr>
+            <td>169</td>
+            <td>2025-06-16 04:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13120.74</td>
+            <td>13077.18</td>
+            <td class="win-text">$5.36</td>
+            <td>$186.03</td>
+          </tr>
+          <tr>
+            <td>170</td>
+            <td>2025-06-16 07:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13093.59</td>
+            <td>13111.61</td>
+            <td class="loss-text">$-1.79</td>
+            <td>$184.24</td>
+          </tr>
+          <tr>
+            <td>171</td>
+            <td>2025-06-16 15:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13164.47</td>
+            <td>13148.11</td>
+            <td class="win-text">$5.12</td>
+            <td>$189.36</td>
+          </tr>
+          <tr>
+            <td>172</td>
+            <td>2025-06-16 19:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13107.56</td>
+            <td>13120.58</td>
+            <td class="loss-text">$-3.09</td>
+            <td>$186.27</td>
+          </tr>
+          <tr>
+            <td>173</td>
+            <td>2025-06-19 18:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13075.07</td>
+            <td>12978.37</td>
+            <td class="win-text">$21.79</td>
+            <td>$208.07</td>
+          </tr>
+          <tr>
+            <td>174</td>
+            <td>2025-06-19 21:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13004.17</td>
+            <td>13009.31</td>
+            <td class="loss-text">$-1.03</td>
+            <td>$207.04</td>
+          </tr>
+          <tr>
+            <td>175</td>
+            <td>2025-06-19 22:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12978.07</td>
+            <td>13008.22</td>
+            <td class="loss-text">$-5.36</td>
+            <td>$201.68</td>
+          </tr>
+          <tr>
+            <td>176</td>
+            <td>2025-06-19 22:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12998.44</td>
+            <td>13011.02</td>
+            <td class="loss-text">$-2.52</td>
+            <td>$199.16</td>
+          </tr>
+          <tr>
+            <td>177</td>
+            <td>2025-06-20 10:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12904.95</td>
+            <td>12917.90</td>
+            <td class="loss-text">$-2.59</td>
+            <td>$196.57</td>
+          </tr>
+          <tr>
+            <td>178</td>
+            <td>2025-06-20 13:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12902.99</td>
+            <td>12835.53</td>
+            <td class="win-text">$10.62</td>
+            <td>$207.19</td>
+          </tr>
+          <tr>
+            <td>179</td>
+            <td>2025-06-20 23:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12782.77</td>
+            <td>12795.20</td>
+            <td class="loss-text">$-2.49</td>
+            <td>$204.71</td>
+          </tr>
+          <tr>
+            <td>180</td>
+            <td>2025-06-21 00:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12786.72</td>
+            <td>12798.02</td>
+            <td class="loss-text">$-2.26</td>
+            <td>$202.44</td>
+          </tr>
+          <tr>
+            <td>181</td>
+            <td>2025-06-21 11:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>12884.21</td>
+            <td>12909.03</td>
+            <td class="loss-text">$-4.96</td>
+            <td>$197.48</td>
+          </tr>
+          <tr>
+            <td>182</td>
+            <td>2025-07-01 04:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13471.90</td>
+            <td>13315.09</td>
+            <td class="win-text">$26.64</td>
+            <td>$224.12</td>
+          </tr>
+          <tr>
+            <td>183</td>
+            <td>2025-07-01 11:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13378.42</td>
+            <td>13391.20</td>
+            <td class="loss-text">$-2.56</td>
+            <td>$221.57</td>
+          </tr>
+          <tr>
+            <td>184</td>
+            <td>2025-07-01 13:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13384.86</td>
+            <td>13401.91</td>
+            <td class="loss-text">$-3.41</td>
+            <td>$218.15</td>
+          </tr>
+          <tr>
+            <td>185</td>
+            <td>2025-07-01 17:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13442.44</td>
+            <td>13443.83</td>
+            <td class="loss-text">$-0.28</td>
+            <td>$217.88</td>
+          </tr>
+          <tr>
+            <td>186</td>
+            <td>2025-07-01 18:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13435.01</td>
+            <td>13456.57</td>
+            <td class="loss-text">$-4.31</td>
+            <td>$213.57</td>
+          </tr>
+          <tr>
+            <td>187</td>
+            <td>2025-07-03 06:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13357.36</td>
+            <td>13370.48</td>
+            <td class="loss-text">$-2.62</td>
+            <td>$210.94</td>
+          </tr>
+          <tr>
+            <td>188</td>
+            <td>2025-07-03 06:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13351.27</td>
+            <td>13364.69</td>
+            <td class="loss-text">$-2.68</td>
+            <td>$208.26</td>
+          </tr>
+          <tr>
+            <td>189</td>
+            <td>2025-07-11 01:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13956.78</td>
+            <td>13961.43</td>
+            <td class="win-text">$1.28</td>
+            <td>$209.54</td>
+          </tr>
+          <tr>
+            <td>190</td>
+            <td>2025-07-11 12:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13829.11</td>
+            <td>13856.48</td>
+            <td class="loss-text">$-5.47</td>
+            <td>$204.07</td>
+          </tr>
+          <tr>
+            <td>191</td>
+            <td>2025-07-11 16:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13818.52</td>
+            <td>13827.53</td>
+            <td class="loss-text">$-1.80</td>
+            <td>$202.27</td>
+          </tr>
+          <tr>
+            <td>192</td>
+            <td>2025-07-12 01:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13890.65</td>
+            <td>13879.45</td>
+            <td class="win-text">$4.06</td>
+            <td>$206.33</td>
+          </tr>
+          <tr>
+            <td>193</td>
+            <td>2025-07-12 02:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13876.93</td>
+            <td>13904.36</td>
+            <td class="loss-text">$-5.49</td>
+            <td>$200.84</td>
+          </tr>
+          <tr>
+            <td>194</td>
+            <td>2025-07-13 03:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13769.45</td>
+            <td>13762.22</td>
+            <td class="win-text">$2.39</td>
+            <td>$203.24</td>
+          </tr>
+          <tr>
+            <td>195</td>
+            <td>2025-07-13 05:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13769.30</td>
+            <td>13782.60</td>
+            <td class="loss-text">$-2.66</td>
+            <td>$200.58</td>
+          </tr>
+          <tr>
+            <td>196</td>
+            <td>2025-07-14 06:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13889.41</td>
+            <td>13903.58</td>
+            <td class="loss-text">$-2.84</td>
+            <td>$197.74</td>
+          </tr>
+          <tr>
+            <td>197</td>
+            <td>2025-07-17 16:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13955.18</td>
+            <td>13963.51</td>
+            <td class="win-text">$0.04</td>
+            <td>$197.78</td>
+          </tr>
+          <tr>
+            <td>198</td>
+            <td>2025-07-17 19:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13958.25</td>
+            <td>13893.67</td>
+            <td class="win-text">$10.74</td>
+            <td>$208.53</td>
+          </tr>
+          <tr>
+            <td>199</td>
+            <td>2025-07-18 04:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13849.82</td>
+            <td>13817.67</td>
+            <td class="win-text">$8.25</td>
+            <td>$216.77</td>
+          </tr>
+          <tr>
+            <td>200</td>
+            <td>2025-07-18 05:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13826.73</td>
+            <td>13842.27</td>
+            <td class="loss-text">$-3.11</td>
+            <td>$213.66</td>
+          </tr>
+          <tr>
+            <td>201</td>
+            <td>2025-07-18 06:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13817.40</td>
+            <td>13839.21</td>
+            <td class="loss-text">$-4.36</td>
+            <td>$209.30</td>
+          </tr>
+          <tr>
+            <td>202</td>
+            <td>2025-07-18 07:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13831.26</td>
+            <td>13826.09</td>
+            <td class="win-text">$3.06</td>
+            <td>$212.36</td>
+          </tr>
+          <tr>
+            <td>203</td>
+            <td>2025-07-18 10:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13827.58</td>
+            <td>13767.62</td>
+            <td class="win-text">$7.82</td>
+            <td>$220.17</td>
+          </tr>
+          <tr>
+            <td>204</td>
+            <td>2025-07-20 10:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13670.41</td>
+            <td>13703.66</td>
+            <td class="loss-text">$-4.47</td>
+            <td>$215.71</td>
+          </tr>
+          <tr>
+            <td>205</td>
+            <td>2025-07-20 10:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>13690.94</td>
+            <td>13704.65</td>
+            <td class="loss-text">$-2.74</td>
+            <td>$212.97</td>
+          </tr>
+          <tr>
+            <td>206</td>
+            <td>2025-07-26 07:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>14268.76</td>
+            <td>14282.89</td>
+            <td class="loss-text">$-2.83</td>
+            <td>$210.14</td>
+          </tr>
+          <tr>
+            <td>207</td>
+            <td>2025-07-26 18:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>14176.94</td>
+            <td>14191.20</td>
+            <td class="loss-text">$-2.85</td>
+            <td>$207.29</td>
+          </tr>
+          <tr>
+            <td>208</td>
+            <td>2025-07-26 19:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>14186.63</td>
+            <td>14199.88</td>
+            <td class="loss-text">$-2.65</td>
+            <td>$204.64</td>
+          </tr>
+          <tr>
+            <td>209</td>
+            <td>2025-07-26 21:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>14191.09</td>
+            <td>14205.23</td>
+            <td class="loss-text">$-2.83</td>
+            <td>$201.81</td>
+          </tr>
+          <tr>
+            <td>210</td>
+            <td>2025-07-27 09:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>14166.98</td>
+            <td>14146.00</td>
+            <td class="win-text">$6.76</td>
+            <td>$208.57</td>
+          </tr>
+          <tr>
+            <td>211</td>
+            <td>2025-07-28 09:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>14154.02</td>
+            <td>14168.38</td>
+            <td class="loss-text">$-2.87</td>
+            <td>$205.70</td>
+          </tr>
+          <tr>
+            <td>212</td>
+            <td>2025-07-31 10:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>14259.39</td>
+            <td>14161.30</td>
+            <td class="win-text">$15.48</td>
+            <td>$221.18</td>
+          </tr>
+          <tr>
+            <td>213</td>
+            <td>2025-07-31 12:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>14189.03</td>
+            <td>14212.22</td>
+            <td class="loss-text">$-4.64</td>
+            <td>$216.54</td>
+          </tr>
+          <tr>
+            <td>214</td>
+            <td>2025-07-31 12:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>14208.25</td>
+            <td>14214.33</td>
+            <td class="loss-text">$-1.22</td>
+            <td>$215.33</td>
+          </tr>
+          <tr>
+            <td>215</td>
+            <td>2025-07-31 13:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>14207.21</td>
+            <td>14221.64</td>
+            <td class="loss-text">$-2.89</td>
+            <td>$212.44</td>
+          </tr>
+          <tr>
+            <td>216</td>
+            <td>2025-08-03 03:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>14369.53</td>
+            <td>14383.59</td>
+            <td class="loss-text">$-2.81</td>
+            <td>$209.63</td>
+          </tr>
+          <tr>
+            <td>217</td>
+            <td>2025-08-05 13:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>14425.38</td>
+            <td>14439.71</td>
+            <td class="loss-text">$-2.87</td>
+            <td>$206.76</td>
+          </tr>
+          <tr>
+            <td>218</td>
+            <td>2025-08-06 01:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>14345.86</td>
+            <td>14373.08</td>
+            <td class="loss-text">$-3.47</td>
+            <td>$203.29</td>
+          </tr>
+          <tr>
+            <td>219</td>
+            <td>2025-08-06 18:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>14241.60</td>
+            <td>14253.86</td>
+            <td class="loss-text">$-2.45</td>
+            <td>$200.83</td>
+          </tr>
+          <tr>
+            <td>220</td>
+            <td>2025-08-07 11:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>14180.94</td>
+            <td>14190.34</td>
+            <td class="loss-text">$-1.88</td>
+            <td>$198.95</td>
+          </tr>
+          <tr>
+            <td>221</td>
+            <td>2025-08-07 12:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>14181.58</td>
+            <td>14195.61</td>
+            <td class="loss-text">$-2.80</td>
+            <td>$196.15</td>
+          </tr>
+          <tr>
+            <td>222</td>
+            <td>2025-08-08 07:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>14200.44</td>
+            <td>14145.89</td>
+            <td class="win-text">$11.61</td>
+            <td>$207.76</td>
+          </tr>
+          <tr>
+            <td>223</td>
+            <td>2025-08-08 13:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>14143.59</td>
+            <td>14115.41</td>
+            <td class="win-text">$8.08</td>
+            <td>$215.84</td>
+          </tr>
+          <tr>
+            <td>224</td>
+            <td>2025-08-15 08:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>14865.44</td>
+            <td>14879.36</td>
+            <td class="loss-text">$-2.78</td>
+            <td>$213.06</td>
+          </tr>
+          <tr>
+            <td>225</td>
+            <td>2025-08-15 09:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>14872.70</td>
+            <td>14887.95</td>
+            <td class="loss-text">$-3.05</td>
+            <td>$210.01</td>
+          </tr>
+          <tr>
+            <td>226</td>
+            <td>2025-08-15 09:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>14870.39</td>
+            <td>14884.08</td>
+            <td class="loss-text">$-2.74</td>
+            <td>$207.27</td>
+          </tr>
+          <tr>
+            <td>227</td>
+            <td>2025-08-16 01:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>14880.06</td>
+            <td>14857.04</td>
+            <td class="win-text">$2.84</td>
+            <td>$210.11</td>
+          </tr>
+          <tr>
+            <td>228</td>
+            <td>2025-08-21 22:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>15071.70</td>
+            <td>15086.44</td>
+            <td class="loss-text">$-2.95</td>
+            <td>$207.16</td>
+          </tr>
+          <tr>
+            <td>229</td>
+            <td>2025-08-25 16:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>15140.41</td>
+            <td>15155.41</td>
+            <td class="loss-text">$-3.00</td>
+            <td>$204.16</td>
+          </tr>
+          <tr>
+            <td>230</td>
+            <td>2025-09-01 07:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>16173.40</td>
+            <td>16171.61</td>
+            <td class="win-text">$3.49</td>
+            <td>$207.65</td>
+          </tr>
+          <tr>
+            <td>231</td>
+            <td>2025-09-09 03:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>17124.38</td>
+            <td>17159.00</td>
+            <td class="loss-text">$-6.90</td>
+            <td>$200.76</td>
+          </tr>
+          <tr>
+            <td>232</td>
+            <td>2025-09-09 12:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>17121.39</td>
+            <td>17138.20</td>
+            <td class="loss-text">$-3.36</td>
+            <td>$197.40</td>
+          </tr>
+          <tr>
+            <td>233</td>
+            <td>2025-09-10 00:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>17062.55</td>
+            <td>17056.46</td>
+            <td class="win-text">$1.33</td>
+            <td>$198.72</td>
+          </tr>
+          <tr>
+            <td>234</td>
+            <td>2025-09-12 18:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>17133.58</td>
+            <td>17149.60</td>
+            <td class="loss-text">$-3.20</td>
+            <td>$195.52</td>
+          </tr>
+          <tr>
+            <td>235</td>
+            <td>2025-09-12 18:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>17139.97</td>
+            <td>17157.20</td>
+            <td class="loss-text">$-3.45</td>
+            <td>$192.07</td>
+          </tr>
+          <tr>
+            <td>236</td>
+            <td>2025-10-03 23:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>19591.01</td>
+            <td>19586.52</td>
+            <td class="win-text">$4.39</td>
+            <td>$196.46</td>
+          </tr>
+          <tr>
+            <td>237</td>
+            <td>2025-10-04 02:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>19563.46</td>
+            <td>19584.04</td>
+            <td class="loss-text">$-3.58</td>
+            <td>$192.88</td>
+          </tr>
+          <tr>
+            <td>238</td>
+            <td>2025-10-09 03:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>19882.51</td>
+            <td>19865.38</td>
+            <td class="win-text">$6.58</td>
+            <td>$199.46</td>
+          </tr>
+          <tr>
+            <td>239</td>
+            <td>2025-10-09 15:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>19889.28</td>
+            <td>19863.39</td>
+            <td class="win-text">$5.73</td>
+            <td>$205.20</td>
+          </tr>
+          <tr>
+            <td>240</td>
+            <td>2025-10-13 18:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20206.43</td>
+            <td>20245.67</td>
+            <td class="loss-text">$-7.28</td>
+            <td>$197.92</td>
+          </tr>
+          <tr>
+            <td>241</td>
+            <td>2025-10-13 18:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20224.39</td>
+            <td>20244.30</td>
+            <td class="loss-text">$-3.98</td>
+            <td>$193.94</td>
+          </tr>
+          <tr>
+            <td>242</td>
+            <td>2025-10-13 23:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20331.20</td>
+            <td>20342.43</td>
+            <td class="loss-text">$-1.68</td>
+            <td>$192.26</td>
+          </tr>
+          <tr>
+            <td>243</td>
+            <td>2025-10-14 01:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20300.26</td>
+            <td>20239.52</td>
+            <td class="win-text">$12.85</td>
+            <td>$205.11</td>
+          </tr>
+          <tr>
+            <td>244</td>
+            <td>2025-10-18 15:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20538.67</td>
+            <td>20552.05</td>
+            <td class="loss-text">$-1.94</td>
+            <td>$203.18</td>
+          </tr>
+          <tr>
+            <td>245</td>
+            <td>2025-10-18 22:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20597.54</td>
+            <td>20595.81</td>
+            <td class="loss-text">$-0.21</td>
+            <td>$202.96</td>
+          </tr>
+          <tr>
+            <td>246</td>
+            <td>2025-10-18 23:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20604.52</td>
+            <td>20624.95</td>
+            <td class="loss-text">$-4.09</td>
+            <td>$198.88</td>
+          </tr>
+          <tr>
+            <td>247</td>
+            <td>2025-10-20 00:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20576.03</td>
+            <td>20492.54</td>
+            <td class="win-text">$17.49</td>
+            <td>$216.37</td>
+          </tr>
+          <tr>
+            <td>248</td>
+            <td>2025-10-20 06:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20469.13</td>
+            <td>20489.73</td>
+            <td class="loss-text">$-4.12</td>
+            <td>$212.25</td>
+          </tr>
+          <tr>
+            <td>249</td>
+            <td>2025-10-20 08:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20445.11</td>
+            <td>20469.41</td>
+            <td class="loss-text">$-4.26</td>
+            <td>$207.99</td>
+          </tr>
+          <tr>
+            <td>250</td>
+            <td>2025-10-20 20:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20364.19</td>
+            <td>20384.22</td>
+            <td class="loss-text">$-4.01</td>
+            <td>$203.99</td>
+          </tr>
+          <tr>
+            <td>251</td>
+            <td>2025-10-21 04:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20285.73</td>
+            <td>20276.03</td>
+            <td class="win-text">$2.62</td>
+            <td>$206.60</td>
+          </tr>
+          <tr>
+            <td>252</td>
+            <td>2025-10-21 05:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20275.58</td>
+            <td>20315.74</td>
+            <td class="loss-text">$-7.43</td>
+            <td>$199.18</td>
+          </tr>
+          <tr>
+            <td>253</td>
+            <td>2025-10-21 09:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20383.55</td>
+            <td>20404.03</td>
+            <td class="loss-text">$-4.10</td>
+            <td>$195.08</td>
+          </tr>
+          <tr>
+            <td>254</td>
+            <td>2025-10-21 10:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20380.99</td>
+            <td>20401.49</td>
+            <td class="loss-text">$-4.10</td>
+            <td>$190.98</td>
+          </tr>
+          <tr>
+            <td>255</td>
+            <td>2025-10-22 08:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20332.58</td>
+            <td>20351.03</td>
+            <td class="loss-text">$-1.93</td>
+            <td>$189.05</td>
+          </tr>
+          <tr>
+            <td>256</td>
+            <td>2025-10-22 16:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20174.59</td>
+            <td>20128.35</td>
+            <td class="loss-text">$-2.07</td>
+            <td>$186.98</td>
+          </tr>
+          <tr>
+            <td>257</td>
+            <td>2025-10-23 01:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20108.47</td>
+            <td>20140.41</td>
+            <td class="loss-text">$-4.13</td>
+            <td>$182.85</td>
+          </tr>
+          <tr>
+            <td>258</td>
+            <td>2025-10-28 17:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20296.79</td>
+            <td>20338.31</td>
+            <td class="loss-text">$-7.60</td>
+            <td>$175.25</td>
+          </tr>
+          <tr>
+            <td>259</td>
+            <td>2025-10-28 18:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20308.63</td>
+            <td>20320.58</td>
+            <td class="loss-text">$-1.57</td>
+            <td>$173.68</td>
+          </tr>
+          <tr>
+            <td>260</td>
+            <td>2025-10-28 22:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20373.88</td>
+            <td>20280.10</td>
+            <td class="win-text">$19.54</td>
+            <td>$193.22</td>
+          </tr>
+          <tr>
+            <td>261</td>
+            <td>2025-10-29 06:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20418.13</td>
+            <td>20395.15</td>
+            <td class="win-text">$5.32</td>
+            <td>$198.54</td>
+          </tr>
+          <tr>
+            <td>262</td>
+            <td>2025-10-29 08:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20417.23</td>
+            <td>20437.56</td>
+            <td class="loss-text">$-4.07</td>
+            <td>$194.47</td>
+          </tr>
+          <tr>
+            <td>263</td>
+            <td>2025-10-29 16:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20349.50</td>
+            <td>20370.77</td>
+            <td class="loss-text">$-4.25</td>
+            <td>$190.22</td>
+          </tr>
+          <tr>
+            <td>264</td>
+            <td>2025-10-29 18:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20337.35</td>
+            <td>20350.10</td>
+            <td class="loss-text">$-6.24</td>
+            <td>$183.98</td>
+          </tr>
+          <tr>
+            <td>265</td>
+            <td>2025-10-30 11:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20159.11</td>
+            <td>20102.98</td>
+            <td class="win-text">$11.70</td>
+            <td>$195.69</td>
+          </tr>
+          <tr>
+            <td>266</td>
+            <td>2025-10-31 00:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20026.70</td>
+            <td>19997.17</td>
+            <td class="win-text">$6.70</td>
+            <td>$202.39</td>
+          </tr>
+          <tr>
+            <td>267</td>
+            <td>2025-10-31 10:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20097.70</td>
+            <td>20033.02</td>
+            <td class="win-text">$13.36</td>
+            <td>$215.74</td>
+          </tr>
+          <tr>
+            <td>268</td>
+            <td>2025-10-31 15:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20075.16</td>
+            <td>20050.64</td>
+            <td class="win-text">$5.55</td>
+            <td>$221.29</td>
+          </tr>
+          <tr>
+            <td>269</td>
+            <td>2025-11-01 01:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20008.16</td>
+            <td>19989.01</td>
+            <td class="win-text">$4.62</td>
+            <td>$225.91</td>
+          </tr>
+          <tr>
+            <td>270</td>
+            <td>2025-11-01 02:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20009.83</td>
+            <td>20031.18</td>
+            <td class="loss-text">$-3.51</td>
+            <td>$222.40</td>
+          </tr>
+          <tr>
+            <td>271</td>
+            <td>2025-11-01 13:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20086.55</td>
+            <td>20106.56</td>
+            <td class="loss-text">$-4.00</td>
+            <td>$218.40</td>
+          </tr>
+          <tr>
+            <td>272</td>
+            <td>2025-11-02 02:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>19948.18</td>
+            <td>19968.74</td>
+            <td class="loss-text">$-4.11</td>
+            <td>$214.29</td>
+          </tr>
+          <tr>
+            <td>273</td>
+            <td>2025-11-04 21:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20049.54</td>
+            <td>19952.03</td>
+            <td class="win-text">$19.95</td>
+            <td>$234.23</td>
+          </tr>
+          <tr>
+            <td>274</td>
+            <td>2025-11-05 04:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>19961.44</td>
+            <td>20002.05</td>
+            <td class="loss-text">$-7.42</td>
+            <td>$226.81</td>
+          </tr>
+          <tr>
+            <td>275</td>
+            <td>2025-11-05 05:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>19976.01</td>
+            <td>19999.91</td>
+            <td class="loss-text">$-4.11</td>
+            <td>$222.70</td>
+          </tr>
+          <tr>
+            <td>276</td>
+            <td>2025-11-05 21:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20052.43</td>
+            <td>20058.56</td>
+            <td class="loss-text">$-1.23</td>
+            <td>$221.48</td>
+          </tr>
+          <tr>
+            <td>277</td>
+            <td>2025-11-05 22:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>20027.40</td>
+            <td>20019.49</td>
+            <td class="win-text">$0.14</td>
+            <td>$221.61</td>
+          </tr>
+          <tr>
+            <td>278</td>
+            <td>2025-11-06 04:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>19833.40</td>
+            <td>19768.07</td>
+            <td class="win-text">$13.71</td>
+            <td>$235.32</td>
+          </tr>
+          <tr>
+            <td>279</td>
+            <td>2025-11-06 09:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>19710.55</td>
+            <td>19704.64</td>
+            <td class="win-text">$1.66</td>
+            <td>$236.98</td>
+          </tr>
+          <tr>
+            <td>280</td>
+            <td>2025-11-06 23:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>19627.08</td>
+            <td>19646.40</td>
+            <td class="loss-text">$-3.87</td>
+            <td>$233.11</td>
+          </tr>
+          <tr>
+            <td>281</td>
+            <td>2025-11-07 13:15:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>19769.21</td>
+            <td>19661.36</td>
+            <td class="win-text">$22.01</td>
+            <td>$255.12</td>
+          </tr>
+          <tr>
+            <td>282</td>
+            <td>2025-11-07 17:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>19682.00</td>
+            <td>19700.95</td>
+            <td class="loss-text">$-3.79</td>
+            <td>$251.33</td>
+          </tr>
+          <tr>
+            <td>283</td>
+            <td>2025-11-07 18:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>19691.53</td>
+            <td>19663.88</td>
+            <td class="win-text">$7.37</td>
+            <td>$258.70</td>
+          </tr>
+          <tr>
+            <td>284</td>
+            <td>2025-11-08 15:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>19392.48</td>
+            <td>19382.76</td>
+            <td class="win-text">$2.39</td>
+            <td>$261.09</td>
+          </tr>
+          <tr>
+            <td>285</td>
+            <td>2025-11-08 22:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>19472.65</td>
+            <td>19472.83</td>
+            <td class="win-text">$0.48</td>
+            <td>$261.57</td>
+          </tr>
+          <tr>
+            <td>286</td>
+            <td>2025-11-09 12:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>19157.37</td>
+            <td>19175.93</td>
+            <td class="loss-text">$-3.71</td>
+            <td>$257.86</td>
+          </tr>
+          <tr>
+            <td>287</td>
+            <td>2025-11-09 13:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>19158.15</td>
+            <td>19177.62</td>
+            <td class="loss-text">$-3.89</td>
+            <td>$253.96</td>
+          </tr>
+          <tr>
+            <td>288</td>
+            <td>2025-11-15 09:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>19515.77</td>
+            <td>19512.73</td>
+            <td class="win-text">$0.92</td>
+            <td>$254.88</td>
+          </tr>
+          <tr>
+            <td>289</td>
+            <td>2025-11-20 04:30:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>19749.61</td>
+            <td>19777.04</td>
+            <td class="loss-text">$-4.85</td>
+            <td>$250.03</td>
+          </tr>
+          <tr>
+            <td>290</td>
+            <td>2025-11-20 10:00:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>19789.28</td>
+            <td>19755.77</td>
+            <td class="win-text">$7.16</td>
+            <td>$257.19</td>
+          </tr>
+          <tr>
+            <td>291</td>
+            <td>2025-11-21 08:45:00</td>
+            <td>CRASH</td>
+            <td>Signal/SL</td>
+            <td>19675.63</td>
+            <td>19653.68</td>
+            <td class="win-text">$4.97</td>
+            <td>$262.16</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+      const ctx = document.getElementById("equityChart").getContext("2d");
+      const equityChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: [
+            "2024-12-31",
+            "2025-01-01",
+            "2025-01-01",
+            "2025-01-02",
+            "2025-01-02",
+            "2025-01-07",
+            "2025-01-08",
+            "2025-01-09",
+            "2025-01-14",
+            "2025-01-15",
+            "2025-01-15",
+            "2025-01-15",
+            "2025-01-15",
+            "2025-01-15",
+            "2025-01-16",
+            "2025-01-16",
+            "2025-01-19",
+            "2025-01-19",
+            "2025-01-21",
+            "2025-01-23",
+            "2025-01-23",
+            "2025-01-23",
+            "2025-01-23",
+            "2025-01-29",
+            "2025-01-30",
+            "2025-01-30",
+            "2025-01-30",
+            "2025-01-30",
+            "2025-01-30",
+            "2025-01-31",
+            "2025-02-04",
+            "2025-02-04",
+            "2025-02-04",
+            "2025-02-04",
+            "2025-02-04",
+            "2025-02-05",
+            "2025-02-05",
+            "2025-02-05",
+            "2025-02-06",
+            "2025-02-09",
+            "2025-02-10",
+            "2025-02-10",
+            "2025-02-10",
+            "2025-02-10",
+            "2025-02-11",
+            "2025-02-11",
+            "2025-02-12",
+            "2025-02-13",
+            "2025-02-18",
+            "2025-02-18",
+            "2025-02-19",
+            "2025-02-20",
+            "2025-02-20",
+            "2025-02-20",
+            "2025-02-20",
+            "2025-02-23",
+            "2025-02-23",
+            "2025-02-24",
+            "2025-02-28",
+            "2025-02-28",
+            "2025-02-28",
+            "2025-03-06",
+            "2025-03-06",
+            "2025-03-06",
+            "2025-03-06",
+            "2025-03-07",
+            "2025-03-07",
+            "2025-03-07",
+            "2025-03-07",
+            "2025-03-09",
+            "2025-03-09",
+            "2025-03-10",
+            "2025-03-12",
+            "2025-03-12",
+            "2025-03-12",
+            "2025-03-12",
+            "2025-03-13",
+            "2025-03-13",
+            "2025-03-22",
+            "2025-03-22",
+            "2025-03-22",
+            "2025-03-23",
+            "2025-03-23",
+            "2025-03-31",
+            "2025-03-31",
+            "2025-04-03",
+            "2025-04-08",
+            "2025-04-08",
+            "2025-04-10",
+            "2025-04-13",
+            "2025-04-13",
+            "2025-04-13",
+            "2025-04-13",
+            "2025-04-13",
+            "2025-04-14",
+            "2025-04-14",
+            "2025-04-18",
+            "2025-04-18",
+            "2025-04-18",
+            "2025-04-18",
+            "2025-04-19",
+            "2025-04-19",
+            "2025-04-19",
+            "2025-04-21",
+            "2025-04-22",
+            "2025-04-22",
+            "2025-04-22",
+            "2025-04-22",
+            "2025-04-23",
+            "2025-04-24",
+            "2025-04-24",
+            "2025-04-24",
+            "2025-04-24",
+            "2025-04-24",
+            "2025-04-25",
+            "2025-04-28",
+            "2025-05-01",
+            "2025-05-02",
+            "2025-05-02",
+            "2025-05-02",
+            "2025-05-03",
+            "2025-05-03",
+            "2025-05-03",
+            "2025-05-04",
+            "2025-05-05",
+            "2025-05-11",
+            "2025-05-13",
+            "2025-05-13",
+            "2025-05-14",
+            "2025-05-14",
+            "2025-05-16",
+            "2025-05-16",
+            "2025-05-17",
+            "2025-05-17",
+            "2025-05-19",
+            "2025-05-21",
+            "2025-05-22",
+            "2025-05-22",
+            "2025-05-27",
+            "2025-05-27",
+            "2025-05-27",
+            "2025-05-28",
+            "2025-05-28",
+            "2025-05-28",
+            "2025-05-28",
+            "2025-05-28",
+            "2025-05-28",
+            "2025-05-28",
+            "2025-05-29",
+            "2025-05-29",
+            "2025-05-29",
+            "2025-05-29",
+            "2025-05-30",
+            "2025-05-30",
+            "2025-05-31",
+            "2025-06-01",
+            "2025-06-01",
+            "2025-06-02",
+            "2025-06-03",
+            "2025-06-08",
+            "2025-06-11",
+            "2025-06-12",
+            "2025-06-14",
+            "2025-06-14",
+            "2025-06-14",
+            "2025-06-14",
+            "2025-06-14",
+            "2025-06-15",
+            "2025-06-15",
+            "2025-06-16",
+            "2025-06-16",
+            "2025-06-16",
+            "2025-06-16",
+            "2025-06-19",
+            "2025-06-19",
+            "2025-06-19",
+            "2025-06-19",
+            "2025-06-20",
+            "2025-06-20",
+            "2025-06-20",
+            "2025-06-21",
+            "2025-06-21",
+            "2025-07-01",
+            "2025-07-01",
+            "2025-07-01",
+            "2025-07-01",
+            "2025-07-01",
+            "2025-07-03",
+            "2025-07-03",
+            "2025-07-11",
+            "2025-07-11",
+            "2025-07-11",
+            "2025-07-12",
+            "2025-07-12",
+            "2025-07-13",
+            "2025-07-13",
+            "2025-07-14",
+            "2025-07-17",
+            "2025-07-17",
+            "2025-07-18",
+            "2025-07-18",
+            "2025-07-18",
+            "2025-07-18",
+            "2025-07-18",
+            "2025-07-20",
+            "2025-07-20",
+            "2025-07-26",
+            "2025-07-26",
+            "2025-07-26",
+            "2025-07-26",
+            "2025-07-27",
+            "2025-07-28",
+            "2025-07-31",
+            "2025-07-31",
+            "2025-07-31",
+            "2025-07-31",
+            "2025-08-03",
+            "2025-08-05",
+            "2025-08-06",
+            "2025-08-06",
+            "2025-08-07",
+            "2025-08-07",
+            "2025-08-08",
+            "2025-08-08",
+            "2025-08-15",
+            "2025-08-15",
+            "2025-08-15",
+            "2025-08-16",
+            "2025-08-21",
+            "2025-08-25",
+            "2025-09-01",
+            "2025-09-09",
+            "2025-09-09",
+            "2025-09-10",
+            "2025-09-12",
+            "2025-09-12",
+            "2025-10-03",
+            "2025-10-04",
+            "2025-10-09",
+            "2025-10-09",
+            "2025-10-13",
+            "2025-10-13",
+            "2025-10-13",
+            "2025-10-14",
+            "2025-10-18",
+            "2025-10-18",
+            "2025-10-18",
+            "2025-10-20",
+            "2025-10-20",
+            "2025-10-20",
+            "2025-10-20",
+            "2025-10-21",
+            "2025-10-21",
+            "2025-10-21",
+            "2025-10-21",
+            "2025-10-22",
+            "2025-10-22",
+            "2025-10-23",
+            "2025-10-28",
+            "2025-10-28",
+            "2025-10-28",
+            "2025-10-29",
+            "2025-10-29",
+            "2025-10-29",
+            "2025-10-29",
+            "2025-10-30",
+            "2025-10-31",
+            "2025-10-31",
+            "2025-10-31",
+            "2025-11-01",
+            "2025-11-01",
+            "2025-11-01",
+            "2025-11-02",
+            "2025-11-04",
+            "2025-11-05",
+            "2025-11-05",
+            "2025-11-05",
+            "2025-11-05",
+            "2025-11-06",
+            "2025-11-06",
+            "2025-11-06",
+            "2025-11-07",
+            "2025-11-07",
+            "2025-11-07",
+            "2025-11-08",
+            "2025-11-08",
+            "2025-11-09",
+            "2025-11-09",
+            "2025-11-15",
+            "2025-11-20",
+            "2025-11-20",
+            "2025-11-21",
+          ],
+          datasets: [
+            {
+              label: "Account Balance ($)",
+              data: [
+                50, 51.42839999999997, 48.949200000000204, 46.48840000000018,
+                50.62400000000016, 53.91760000000031, 51.34200000000055,
+                58.2958000000006, 65.19020000000054, 62.72340000000076,
+                67.02040000000088, 63.323000000001045, 62.196000000001,
+                61.19200000000091, 58.58560000000106, 57.068800000001275,
+                56.04660000000148, 67.72900000000153, 65.37940000000125,
+                62.8702000000012, 83.86220000000102, 80.95120000000134,
+                86.01100000000115, 81.98840000000128, 86.20040000000154,
+                85.01260000000147, 82.5766000000014, 82.63200000000141,
+                77.79180000000159, 74.95060000000193, 83.07940000000197,
+                80.6050000000021, 82.84280000000216, 83.62040000000232,
+                81.19280000000215, 83.30640000000201, 83.01580000000212,
+                80.58220000000219, 80.11480000000192, 76.520600000002,
+                74.05260000000197, 72.28220000000182, 68.61680000000159,
+                63.5982000000018, 62.17680000000181, 61.31180000000167,
+                60.95120000000169, 58.9290000000019, 65.06200000000207,
+                72.85160000000214, 71.5220000000023, 79.37280000000209,
+                77.26180000000203, 77.57700000000185, 80.19700000000192,
+                78.29200000000164, 80.69060000000171, 76.02420000000201,
+                70.18360000000175, 64.76380000000171, 60.68120000000162,
+                58.968800000001636, 56.561600000001626, 54.22860000000181,
+                57.46040000000174, 63.045600000002, 60.64480000000184,
+                60.8964000000018, 57.74020000000199, 53.88480000000198,
+                59.53860000000203, 57.23480000000198, 53.80700000000214,
+                58.82120000000212, 56.91080000000218, 54.610800000002186,
+                77.91680000000196, 77.36740000000208, 74.87360000000189,
+                80.44680000000189, 83.03240000000186, 81.33240000000185,
+                78.88760000000183, 76.28480000000162, 74.22840000000177,
+                71.62000000000151, 72.54700000000156, 67.4574000000015,
+                64.9480000000014, 68.87200000000156, 66.29820000000181,
+                61.17760000000162, 76.7436000000016, 70.77660000000142,
+                68.13380000000143, 65.59420000000136, 66.28860000000131,
+                63.70860000000138, 80.4168000000016, 77.8962000000014,
+                75.27540000000153, 70.13840000000162, 64.06480000000154,
+                61.40380000000148, 64.6886000000013, 61.39280000000143,
+                58.93220000000109, 65.08060000000113, 60.59440000000103,
+                60.421800000001156, 56.390400000000945, 53.81900000000095,
+                49.646600000001115, 47.5368000000013, 67.41640000000115,
+                64.87400000000125, 97.9752000000015, 94.5176000000014,
+                93.01800000000148, 92.1954000000016, 89.6464000000018,
+                87.9754000000019, 82.80340000000179, 91.65600000000158,
+                96.34120000000148, 95.53380000000142, 100.85040000000153,
+                104.52260000000132, 118.0144000000011, 115.62220000000124,
+                126.32320000000108, 123.68380000000106, 119.4220000000012,
+                124.14920000000129, 121.51220000000103, 119.99040000000132,
+                145.78820000000124, 142.73540000000102, 150.6134000000009,
+                147.84820000000107, 145.10600000000085, 153.14280000000107,
+                159.55300000000096, 154.17220000000088, 158.5106000000007,
+                178.67320000000072, 172.57240000000056, 172.83860000000058,
+                177.8732000000007, 173.03160000000096, 170.35980000000126,
+                167.7126000000011, 163.69280000000106, 163.5448000000011,
+                163.09680000000077, 173.76740000000098, 171.267600000001,
+                168.621200000001, 163.14800000000102, 161.63120000000086,
+                158.90160000000066, 156.2584000000006, 152.84480000000036,
+                158.94100000000032, 157.12980000000022, 173.63100000000009,
+                168.32659999999993, 165.75159999999994, 180.66599999999997,
+                186.0263999999999, 184.24019999999982, 189.36479999999975,
+                186.27279999999993, 208.06579999999997, 207.0363999999998,
+                201.67619999999988, 199.15899999999965, 196.5689999999995,
+                207.1921999999995, 204.7053999999993, 202.4447999999993,
+                197.48079999999936, 224.12179999999935, 221.56519999999946,
+                218.1549999999992, 217.8783999999989, 213.56519999999875,
+                210.94179999999872, 208.25759999999866, 209.5421999999988,
+                204.0687999999991, 202.26739999999918, 206.32799999999915,
+                200.84279999999924, 203.23699999999914, 200.57659999999922,
+                197.741599999999, 197.78499999999912, 208.52559999999903,
+                216.77199999999903, 213.66199999999918, 209.2995999999992,
+                212.35779999999943, 220.1749999999993, 215.70799999999912,
+                212.96659999999906, 210.14019999999877, 207.287799999999,
+                204.63659999999913, 201.80779999999908, 208.57059999999913,
+                205.6987999999994, 221.17979999999955, 216.54159999999976,
+                215.32639999999995, 212.43979999999976, 209.62680000000003,
+                206.7601999999999, 203.28580000000002, 200.83480000000017,
+                198.95499999999993, 196.15059999999977, 207.76159999999982,
+                215.8409999999996, 213.0569999999996, 210.0073999999993,
+                207.2679999999993, 210.11159999999944, 207.1631999999994,
+                204.16279999999932, 207.65239999999937, 200.7565999999995,
+                197.3953999999994, 198.72199999999899, 195.51879999999832,
+                192.07359999999858, 196.45959999999863, 192.8757999999983,
+                199.46039999999806, 205.19519999999787, 197.91859999999826,
+                193.93719999999843, 192.2605999999981, 205.1121999999977,
+                203.17679999999777, 202.963599999998, 198.877799999998,
+                216.37259999999839, 212.2521999999986, 207.99299999999891,
+                203.98759999999854, 206.60399999999825, 199.17839999999813,
+                195.08239999999822, 190.98259999999826, 189.0475999999984,
+                186.98079999999862, 182.85319999999882, 175.2489999999987,
+                173.68259999999825, 193.21879999999834, 198.53879999999805,
+                194.4733999999978, 190.22059999999797, 183.98199999999738,
+                195.68679999999765, 202.38579999999817, 215.74219999999875,
+                221.29079999999846, 225.9137999999988, 222.4031999999988,
+                218.40199999999857, 214.28859999999875, 234.2347999999987,
+                226.81039999999808, 222.70319999999808, 221.47819999999808,
+                221.61419999999814, 235.3227999999977, 236.98019999999775,
+                233.1145999999982, 255.12039999999794, 251.32979999999768,
+                258.7039999999975, 261.09119999999706, 261.57119999999736,
+                257.8581999999976, 253.96479999999752, 254.8803999999978,
+                250.03419999999784, 257.18999999999755, 262.16139999999757,
+              ],
+              borderColor: "#3498db",
+              backgroundColor: "rgba(52, 152, 219, 0.1)",
+              borderWidth: 2,
+              pointRadius: 0,
+              pointHoverRadius: 4,
+              fill: true,
+              tension: 0.1,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          interaction: { intersect: false, mode: "index" },
+          scales: {
+            x: { display: false },
+            y: { beginAtZero: false, grid: { color: "#f0f0f0" } },
+          },
+          plugins: {
+            legend: { display: false },
+            title: {
+              display: true,
+              text: "Equity Curve (From 2025-01-01)",
+              font: { size: 16 },
+            },
+          },
+        },
+      });
+    </script>
+  </body>
+</html>

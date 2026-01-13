@@ -1,0 +1,6095 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Trendline Scalper: Boom 900 Index</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      body {
+        font-family: "Segoe UI", system-ui, sans-serif;
+        margin: 0;
+        background-color: #f0f2f5;
+        color: #333;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 40px auto;
+        background: white;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      }
+      h1 {
+        color: #1a202c;
+        text-align: center;
+        margin: 0 0 10px 0;
+        font-size: 2.2em;
+      }
+      .subtitle {
+        text-align: center;
+        color: #718096;
+        margin-bottom: 40px;
+        font-weight: 500;
+      }
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+      }
+      .stat-card {
+        background: white;
+        padding: 25px 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        text-align: center;
+      }
+      .stat-card.profit-card {
+        border-left: 5px solid #2ecc71;
+      }
+      .stat-card.win-card {
+        border-left: 5px solid #3498db;
+      }
+      .stat-card.balance-card {
+        border-left: 5px solid #3498db;
+      }
+      .stat-card.dd-card {
+        border-left: 5px solid #e74c3c;
+      }
+      .stat-card.trade-card {
+        border-left: 5px solid #95a5a6;
+      }
+      .stat-label {
+        font-size: 0.85em;
+        color: #7f8c8d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+      }
+      .stat-val {
+        font-size: 1.8em;
+        font-weight: 700;
+        color: #2d3748;
+        margin-top: 8px;
+      }
+      .stat-val.green {
+        color: #27ae60;
+      }
+      .stat-val.red {
+        color: #c0392b;
+      }
+      .chart-section {
+        margin: 40px 0;
+        padding: 20px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border: 1px solid #edf2f7;
+      }
+      canvas {
+        max-height: 400px;
+        width: 100%;
+      }
+      .section-title {
+        font-size: 1.4em;
+        color: #2d3748;
+        margin: 40px 0 20px 0;
+        font-weight: 700;
+        border-bottom: 2px solid #edf2f7;
+        padding-bottom: 10px;
+      }
+      .monthly-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 15px;
+      }
+      .month-card {
+        padding: 20px 15px;
+        border-radius: 10px;
+        color: white;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+      }
+      .month-card:hover {
+        transform: translateY(-3px);
+      }
+      .month-card.green {
+        background: linear-gradient(135deg, #2ecc71, #27ae60);
+      }
+      .month-card.red {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+      }
+      .month-date {
+        font-size: 0.9em;
+        font-weight: 600;
+        opacity: 0.95;
+        margin-bottom: 8px;
+      }
+      .month-profit {
+        font-size: 1.5em;
+        font-weight: 800;
+        margin-bottom: 8px;
+      }
+      .month-detail {
+        font-size: 0.8em;
+        opacity: 0.9;
+        margin-bottom: 2px;
+      }
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 10px;
+        font-size: 0.9em;
+      }
+      th {
+        background-color: #f8fafc;
+        color: #4a5568;
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid #edf2f7;
+      }
+      td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #edf2f7;
+        color: #4a5568;
+      }
+      tr:hover td {
+        background-color: #f7fafc;
+      }
+      .win-text {
+        color: #27ae60;
+        font-weight: 600;
+      }
+      .loss-text {
+        color: #e74c3c;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="logo">
+        <a href="index.html" style="text-decoration: none; color: inherit">
+          <i class="ph-fill ph-trend-up"></i> T. Chibondo
+          <span class="badge">Quant Fund</span>
+        </a>
+      </div>
+      <div class="nav-links">
+        <a href="index.html">Strategies</a>
+        <a href="about.html" class="active">Philosophy & About</a>
+      </div>
+    </nav>
+    <div class="container">
+      <h1>
+        Strategy Report <span style="color: #3498db">Boom 900 Index</span>
+      </h1>
+      <div class="subtitle">
+        SL: 3.5 Pips | Cooldown: 60m | Zone: 4.0xATR | RSI: 30/70
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card profit-card">
+          <div class="stat-label">Net Profit</div>
+          <div class="stat-val green">$200.07</div>
+        </div>
+        <div class="stat-card win-card">
+          <div class="stat-label">Win Rate</div>
+          <div class="stat-val">39.6%</div>
+        </div>
+        <div class="stat-card balance-card">
+          <div class="stat-label">Final Balance</div>
+          <div class="stat-val">$230.07</div>
+        </div>
+        <div class="stat-card dd-card">
+          <div class="stat-label">Max Drawdown</div>
+          <div class="stat-val red">-$26.37</div>
+        </div>
+        <div class="stat-card trade-card">
+          <div class="stat-label">Total Trades</div>
+          <div class="stat-val">510</div>
+        </div>
+      </div>
+
+      <div class="chart-section">
+        <canvas id="equityChart"></canvas>
+      </div>
+
+      <h2 class="section-title">Monthly Performance</h2>
+      <div class="monthly-grid">
+        <div class="month-card green">
+          <div class="month-date">2025-09</div>
+          <div class="month-profit">$4.57</div>
+          <div class="month-detail">54 Trades</div>
+          <div class="month-detail">Max DD: -$10.50</div>
+        </div>
+
+        <div class="month-card green">
+          <div class="month-date">2025-10</div>
+          <div class="month-profit">$32.51</div>
+          <div class="month-detail">162 Trades</div>
+          <div class="month-detail">Max DD: -$26.37</div>
+        </div>
+
+        <div class="month-card green">
+          <div class="month-date">2025-11</div>
+          <div class="month-profit">$42.03</div>
+          <div class="month-detail">98 Trades</div>
+          <div class="month-detail">Max DD: -$6.36</div>
+        </div>
+
+        <div class="month-card green">
+          <div class="month-date">2025-12</div>
+          <div class="month-profit">$123.56</div>
+          <div class="month-detail">160 Trades</div>
+          <div class="month-detail">Max DD: -$7.50</div>
+        </div>
+
+        <div class="month-card red">
+          <div class="month-date">2026-01</div>
+          <div class="month-profit">$-2.59</div>
+          <div class="month-detail">36 Trades</div>
+          <div class="month-detail">Max DD: -$10.03</div>
+        </div>
+      </div>
+
+      <h2 class="section-title">Trade History</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Time</th>
+            <th>Type</th>
+            <th>Reason</th>
+            <th>Entry</th>
+            <th>Exit</th>
+            <th>PnL</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>2025-09-14 01:07:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9555.46</td>
+            <td>9565.18</td>
+            <td class="win-text">$1.89</td>
+            <td>$31.89</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>2025-09-14 01:07:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9555.46</td>
+            <td>9565.18</td>
+            <td class="win-text">$1.89</td>
+            <td>$33.79</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>2025-09-14 07:37:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9549.38</td>
+            <td>9545.88</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$33.04</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>2025-09-14 07:37:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9549.38</td>
+            <td>9545.88</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$32.29</td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>2025-09-14 08:47:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9549.15</td>
+            <td>9545.65</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$31.54</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td>2025-09-14 08:47:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9549.15</td>
+            <td>9545.65</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$30.79</td>
+          </tr>
+          <tr>
+            <td>7</td>
+            <td>2025-09-16 01:45:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9637.00</td>
+            <td>9652.66</td>
+            <td class="win-text">$3.08</td>
+            <td>$33.87</td>
+          </tr>
+          <tr>
+            <td>8</td>
+            <td>2025-09-16 01:45:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9637.00</td>
+            <td>9652.66</td>
+            <td class="win-text">$3.08</td>
+            <td>$36.95</td>
+          </tr>
+          <tr>
+            <td>9</td>
+            <td>2025-09-18 17:15:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9756.25</td>
+            <td>9759.94</td>
+            <td class="win-text">$0.69</td>
+            <td>$37.63</td>
+          </tr>
+          <tr>
+            <td>10</td>
+            <td>2025-09-18 17:15:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9756.25</td>
+            <td>9759.94</td>
+            <td class="win-text">$0.69</td>
+            <td>$38.32</td>
+          </tr>
+          <tr>
+            <td>11</td>
+            <td>2025-09-18 23:03:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9756.98</td>
+            <td>9753.48</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$37.57</td>
+          </tr>
+          <tr>
+            <td>12</td>
+            <td>2025-09-18 23:03:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9756.98</td>
+            <td>9753.48</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$36.82</td>
+          </tr>
+          <tr>
+            <td>13</td>
+            <td>2025-09-19 21:43:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9653.96</td>
+            <td>9656.67</td>
+            <td class="win-text">$0.49</td>
+            <td>$37.31</td>
+          </tr>
+          <tr>
+            <td>14</td>
+            <td>2025-09-19 21:43:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9653.96</td>
+            <td>9656.67</td>
+            <td class="win-text">$0.49</td>
+            <td>$37.80</td>
+          </tr>
+          <tr>
+            <td>15</td>
+            <td>2025-09-20 07:32:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9581.24</td>
+            <td>9577.74</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$37.05</td>
+          </tr>
+          <tr>
+            <td>16</td>
+            <td>2025-09-20 07:32:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9581.24</td>
+            <td>9577.74</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$36.30</td>
+          </tr>
+          <tr>
+            <td>17</td>
+            <td>2025-09-20 12:53:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9579.34</td>
+            <td>9575.84</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$35.55</td>
+          </tr>
+          <tr>
+            <td>18</td>
+            <td>2025-09-20 12:53:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9579.34</td>
+            <td>9575.84</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$34.80</td>
+          </tr>
+          <tr>
+            <td>19</td>
+            <td>2025-09-21 05:32:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9665.35</td>
+            <td>9661.85</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$34.05</td>
+          </tr>
+          <tr>
+            <td>20</td>
+            <td>2025-09-21 05:32:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9665.35</td>
+            <td>9661.85</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$33.30</td>
+          </tr>
+          <tr>
+            <td>21</td>
+            <td>2025-09-21 08:48:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9673.23</td>
+            <td>9669.73</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$32.55</td>
+          </tr>
+          <tr>
+            <td>22</td>
+            <td>2025-09-21 08:48:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9673.23</td>
+            <td>9669.73</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$31.80</td>
+          </tr>
+          <tr>
+            <td>23</td>
+            <td>2025-09-22 17:01:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9709.93</td>
+            <td>9706.43</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$31.05</td>
+          </tr>
+          <tr>
+            <td>24</td>
+            <td>2025-09-22 17:01:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9709.93</td>
+            <td>9706.43</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$30.30</td>
+          </tr>
+          <tr>
+            <td>25</td>
+            <td>2025-09-22 19:01:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9647.58</td>
+            <td>9659.01</td>
+            <td class="win-text">$2.24</td>
+            <td>$32.54</td>
+          </tr>
+          <tr>
+            <td>26</td>
+            <td>2025-09-22 19:01:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9647.58</td>
+            <td>9659.01</td>
+            <td class="win-text">$2.24</td>
+            <td>$34.78</td>
+          </tr>
+          <tr>
+            <td>27</td>
+            <td>2025-09-23 00:18:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9687.52</td>
+            <td>9684.02</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$34.03</td>
+          </tr>
+          <tr>
+            <td>28</td>
+            <td>2025-09-23 00:18:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9687.52</td>
+            <td>9684.02</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$33.28</td>
+          </tr>
+          <tr>
+            <td>29</td>
+            <td>2025-09-23 01:21:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9683.57</td>
+            <td>9680.07</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$32.53</td>
+          </tr>
+          <tr>
+            <td>30</td>
+            <td>2025-09-23 01:21:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9683.57</td>
+            <td>9680.07</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$31.78</td>
+          </tr>
+          <tr>
+            <td>31</td>
+            <td>2025-09-24 08:45:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9864.87</td>
+            <td>9887.64</td>
+            <td class="win-text">$4.50</td>
+            <td>$36.28</td>
+          </tr>
+          <tr>
+            <td>32</td>
+            <td>2025-09-24 08:45:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9864.87</td>
+            <td>9887.64</td>
+            <td class="win-text">$4.50</td>
+            <td>$40.78</td>
+          </tr>
+          <tr>
+            <td>33</td>
+            <td>2025-09-25 03:39:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9923.15</td>
+            <td>9932.94</td>
+            <td class="win-text">$1.91</td>
+            <td>$42.69</td>
+          </tr>
+          <tr>
+            <td>34</td>
+            <td>2025-09-25 03:39:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9923.15</td>
+            <td>9932.94</td>
+            <td class="win-text">$1.91</td>
+            <td>$44.60</td>
+          </tr>
+          <tr>
+            <td>35</td>
+            <td>2025-09-26 05:42:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9964.02</td>
+            <td>9960.52</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$43.85</td>
+          </tr>
+          <tr>
+            <td>36</td>
+            <td>2025-09-26 05:42:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9964.02</td>
+            <td>9960.52</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$43.10</td>
+          </tr>
+          <tr>
+            <td>37</td>
+            <td>2025-09-27 01:28:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9963.10</td>
+            <td>9959.60</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$42.35</td>
+          </tr>
+          <tr>
+            <td>38</td>
+            <td>2025-09-27 01:28:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9963.10</td>
+            <td>9959.60</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$41.60</td>
+          </tr>
+          <tr>
+            <td>39</td>
+            <td>2025-09-27 20:17:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9821.63</td>
+            <td>9830.54</td>
+            <td class="win-text">$1.73</td>
+            <td>$43.33</td>
+          </tr>
+          <tr>
+            <td>40</td>
+            <td>2025-09-27 20:17:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9821.63</td>
+            <td>9830.54</td>
+            <td class="win-text">$1.73</td>
+            <td>$45.07</td>
+          </tr>
+          <tr>
+            <td>41</td>
+            <td>2025-09-28 07:11:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9815.64</td>
+            <td>9812.14</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$44.32</td>
+          </tr>
+          <tr>
+            <td>42</td>
+            <td>2025-09-28 07:11:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9815.64</td>
+            <td>9812.14</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$43.57</td>
+          </tr>
+          <tr>
+            <td>43</td>
+            <td>2025-09-29 04:40:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9771.73</td>
+            <td>9768.23</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$42.82</td>
+          </tr>
+          <tr>
+            <td>44</td>
+            <td>2025-09-29 04:40:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9771.73</td>
+            <td>9768.23</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$42.07</td>
+          </tr>
+          <tr>
+            <td>45</td>
+            <td>2025-09-29 05:55:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9761.67</td>
+            <td>9758.17</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$41.32</td>
+          </tr>
+          <tr>
+            <td>46</td>
+            <td>2025-09-29 05:55:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9761.67</td>
+            <td>9758.17</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$40.57</td>
+          </tr>
+          <tr>
+            <td>47</td>
+            <td>2025-09-29 07:11:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9762.96</td>
+            <td>9759.46</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$39.82</td>
+          </tr>
+          <tr>
+            <td>48</td>
+            <td>2025-09-29 07:11:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9762.96</td>
+            <td>9759.46</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$39.07</td>
+          </tr>
+          <tr>
+            <td>49</td>
+            <td>2025-09-29 16:45:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9686.47</td>
+            <td>9682.97</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$38.32</td>
+          </tr>
+          <tr>
+            <td>50</td>
+            <td>2025-09-29 16:45:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9686.47</td>
+            <td>9682.97</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$37.57</td>
+          </tr>
+          <tr>
+            <td>51</td>
+            <td>2025-09-30 01:14:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9628.81</td>
+            <td>9625.31</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$36.82</td>
+          </tr>
+          <tr>
+            <td>52</td>
+            <td>2025-09-30 01:14:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9628.81</td>
+            <td>9625.31</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$36.07</td>
+          </tr>
+          <tr>
+            <td>53</td>
+            <td>2025-09-30 02:31:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9629.83</td>
+            <td>9626.33</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$35.32</td>
+          </tr>
+          <tr>
+            <td>54</td>
+            <td>2025-09-30 02:31:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9629.83</td>
+            <td>9626.33</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$34.57</td>
+          </tr>
+          <tr>
+            <td>55</td>
+            <td>2025-10-01 16:45:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9623.68</td>
+            <td>9628.33</td>
+            <td class="win-text">$0.88</td>
+            <td>$35.45</td>
+          </tr>
+          <tr>
+            <td>56</td>
+            <td>2025-10-01 16:45:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9623.68</td>
+            <td>9628.33</td>
+            <td class="win-text">$0.88</td>
+            <td>$36.33</td>
+          </tr>
+          <tr>
+            <td>57</td>
+            <td>2025-10-01 23:10:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9617.75</td>
+            <td>9614.25</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$35.58</td>
+          </tr>
+          <tr>
+            <td>58</td>
+            <td>2025-10-01 23:10:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9617.75</td>
+            <td>9614.25</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$34.83</td>
+          </tr>
+          <tr>
+            <td>59</td>
+            <td>2025-10-02 06:39:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9618.13</td>
+            <td>9614.63</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$34.08</td>
+          </tr>
+          <tr>
+            <td>60</td>
+            <td>2025-10-02 06:39:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9618.13</td>
+            <td>9614.63</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$33.33</td>
+          </tr>
+          <tr>
+            <td>61</td>
+            <td>2025-10-02 07:36:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9618.39</td>
+            <td>9621.04</td>
+            <td class="win-text">$0.48</td>
+            <td>$33.81</td>
+          </tr>
+          <tr>
+            <td>62</td>
+            <td>2025-10-02 07:36:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9618.39</td>
+            <td>9621.04</td>
+            <td class="win-text">$0.48</td>
+            <td>$34.29</td>
+          </tr>
+          <tr>
+            <td>63</td>
+            <td>2025-10-02 09:17:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9616.87</td>
+            <td>9623.73</td>
+            <td class="win-text">$1.32</td>
+            <td>$35.61</td>
+          </tr>
+          <tr>
+            <td>64</td>
+            <td>2025-10-02 09:17:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9616.87</td>
+            <td>9623.73</td>
+            <td class="win-text">$1.32</td>
+            <td>$36.93</td>
+          </tr>
+          <tr>
+            <td>65</td>
+            <td>2025-10-02 10:58:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9623.30</td>
+            <td>9619.80</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$36.18</td>
+          </tr>
+          <tr>
+            <td>66</td>
+            <td>2025-10-02 10:58:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9623.30</td>
+            <td>9619.80</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$35.43</td>
+          </tr>
+          <tr>
+            <td>67</td>
+            <td>2025-10-02 13:08:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9609.88</td>
+            <td>9606.38</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$34.68</td>
+          </tr>
+          <tr>
+            <td>68</td>
+            <td>2025-10-02 13:08:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9609.88</td>
+            <td>9606.38</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$33.93</td>
+          </tr>
+          <tr>
+            <td>69</td>
+            <td>2025-10-02 14:19:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9603.02</td>
+            <td>9599.52</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$33.18</td>
+          </tr>
+          <tr>
+            <td>70</td>
+            <td>2025-10-02 14:19:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9603.02</td>
+            <td>9599.52</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$32.43</td>
+          </tr>
+          <tr>
+            <td>71</td>
+            <td>2025-10-02 23:44:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9492.32</td>
+            <td>9502.39</td>
+            <td class="win-text">$1.96</td>
+            <td>$34.40</td>
+          </tr>
+          <tr>
+            <td>72</td>
+            <td>2025-10-02 23:44:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9492.32</td>
+            <td>9502.39</td>
+            <td class="win-text">$1.96</td>
+            <td>$36.36</td>
+          </tr>
+          <tr>
+            <td>73</td>
+            <td>2025-10-03 17:54:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9497.87</td>
+            <td>9494.37</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$35.61</td>
+          </tr>
+          <tr>
+            <td>74</td>
+            <td>2025-10-03 17:54:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9497.87</td>
+            <td>9494.37</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$34.86</td>
+          </tr>
+          <tr>
+            <td>75</td>
+            <td>2025-10-04 00:37:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9500.00</td>
+            <td>9496.50</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$34.11</td>
+          </tr>
+          <tr>
+            <td>76</td>
+            <td>2025-10-04 00:37:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9500.00</td>
+            <td>9496.50</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$33.36</td>
+          </tr>
+          <tr>
+            <td>77</td>
+            <td>2025-10-04 02:01:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9495.00</td>
+            <td>9491.50</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$32.61</td>
+          </tr>
+          <tr>
+            <td>78</td>
+            <td>2025-10-04 02:01:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9495.00</td>
+            <td>9491.50</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$31.86</td>
+          </tr>
+          <tr>
+            <td>79</td>
+            <td>2025-10-04 06:45:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9395.22</td>
+            <td>9408.12</td>
+            <td class="win-text">$2.53</td>
+            <td>$34.39</td>
+          </tr>
+          <tr>
+            <td>80</td>
+            <td>2025-10-04 06:45:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9395.22</td>
+            <td>9408.12</td>
+            <td class="win-text">$2.53</td>
+            <td>$36.92</td>
+          </tr>
+          <tr>
+            <td>81</td>
+            <td>2025-10-05 03:18:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9415.82</td>
+            <td>9430.89</td>
+            <td class="win-text">$2.97</td>
+            <td>$39.88</td>
+          </tr>
+          <tr>
+            <td>82</td>
+            <td>2025-10-05 03:18:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9415.82</td>
+            <td>9430.89</td>
+            <td class="win-text">$2.97</td>
+            <td>$42.85</td>
+          </tr>
+          <tr>
+            <td>83</td>
+            <td>2025-10-06 08:06:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9623.04</td>
+            <td>9642.36</td>
+            <td class="win-text">$3.81</td>
+            <td>$46.66</td>
+          </tr>
+          <tr>
+            <td>84</td>
+            <td>2025-10-06 08:06:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9623.04</td>
+            <td>9642.36</td>
+            <td class="win-text">$3.81</td>
+            <td>$50.48</td>
+          </tr>
+          <tr>
+            <td>85</td>
+            <td>2025-10-08 01:19:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9692.06</td>
+            <td>9688.56</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$49.73</td>
+          </tr>
+          <tr>
+            <td>86</td>
+            <td>2025-10-08 01:19:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9692.06</td>
+            <td>9688.56</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$48.98</td>
+          </tr>
+          <tr>
+            <td>87</td>
+            <td>2025-10-11 02:40:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9773.50</td>
+            <td>9770.00</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$48.23</td>
+          </tr>
+          <tr>
+            <td>88</td>
+            <td>2025-10-11 02:40:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9773.50</td>
+            <td>9770.00</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$47.48</td>
+          </tr>
+          <tr>
+            <td>89</td>
+            <td>2025-10-11 10:19:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9779.18</td>
+            <td>9775.68</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$46.73</td>
+          </tr>
+          <tr>
+            <td>90</td>
+            <td>2025-10-11 10:19:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9779.18</td>
+            <td>9775.68</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$45.98</td>
+          </tr>
+          <tr>
+            <td>91</td>
+            <td>2025-10-11 13:51:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9772.95</td>
+            <td>9769.45</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$45.23</td>
+          </tr>
+          <tr>
+            <td>92</td>
+            <td>2025-10-11 13:51:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9772.95</td>
+            <td>9769.45</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$44.48</td>
+          </tr>
+          <tr>
+            <td>93</td>
+            <td>2025-10-11 16:56:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9719.30</td>
+            <td>9735.85</td>
+            <td class="win-text">$3.26</td>
+            <td>$47.74</td>
+          </tr>
+          <tr>
+            <td>94</td>
+            <td>2025-10-11 16:56:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9719.30</td>
+            <td>9735.85</td>
+            <td class="win-text">$3.26</td>
+            <td>$51.00</td>
+          </tr>
+          <tr>
+            <td>95</td>
+            <td>2025-10-12 04:59:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9712.71</td>
+            <td>9745.25</td>
+            <td class="win-text">$6.46</td>
+            <td>$57.46</td>
+          </tr>
+          <tr>
+            <td>96</td>
+            <td>2025-10-12 04:59:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9712.71</td>
+            <td>9745.25</td>
+            <td class="win-text">$6.46</td>
+            <td>$63.91</td>
+          </tr>
+          <tr>
+            <td>97</td>
+            <td>2025-10-12 17:54:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9710.02</td>
+            <td>9706.52</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$63.16</td>
+          </tr>
+          <tr>
+            <td>98</td>
+            <td>2025-10-12 17:54:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9710.02</td>
+            <td>9706.52</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$62.41</td>
+          </tr>
+          <tr>
+            <td>99</td>
+            <td>2025-10-12 19:08:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9713.04</td>
+            <td>9709.54</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$61.66</td>
+          </tr>
+          <tr>
+            <td>100</td>
+            <td>2025-10-12 19:08:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9713.04</td>
+            <td>9709.54</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$60.91</td>
+          </tr>
+          <tr>
+            <td>101</td>
+            <td>2025-10-12 20:30:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9706.51</td>
+            <td>9703.01</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$60.16</td>
+          </tr>
+          <tr>
+            <td>102</td>
+            <td>2025-10-12 20:30:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9706.51</td>
+            <td>9703.01</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$59.41</td>
+          </tr>
+          <tr>
+            <td>103</td>
+            <td>2025-10-13 04:16:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9637.99</td>
+            <td>9634.49</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$58.66</td>
+          </tr>
+          <tr>
+            <td>104</td>
+            <td>2025-10-13 04:16:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9637.99</td>
+            <td>9634.49</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$57.91</td>
+          </tr>
+          <tr>
+            <td>105</td>
+            <td>2025-10-13 08:26:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9635.11</td>
+            <td>9631.61</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$57.16</td>
+          </tr>
+          <tr>
+            <td>106</td>
+            <td>2025-10-13 08:26:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9635.11</td>
+            <td>9631.61</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$56.41</td>
+          </tr>
+          <tr>
+            <td>107</td>
+            <td>2025-10-13 10:40:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9634.85</td>
+            <td>9631.35</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$55.66</td>
+          </tr>
+          <tr>
+            <td>108</td>
+            <td>2025-10-13 10:40:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9634.85</td>
+            <td>9631.35</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$54.91</td>
+          </tr>
+          <tr>
+            <td>109</td>
+            <td>2025-10-13 12:40:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9631.68</td>
+            <td>9628.18</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$54.16</td>
+          </tr>
+          <tr>
+            <td>110</td>
+            <td>2025-10-13 12:40:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9631.68</td>
+            <td>9628.18</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$53.41</td>
+          </tr>
+          <tr>
+            <td>111</td>
+            <td>2025-10-13 17:44:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9605.19</td>
+            <td>9601.69</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$52.66</td>
+          </tr>
+          <tr>
+            <td>112</td>
+            <td>2025-10-13 17:44:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9605.19</td>
+            <td>9601.69</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$51.91</td>
+          </tr>
+          <tr>
+            <td>113</td>
+            <td>2025-10-14 22:31:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9604.71</td>
+            <td>9601.21</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$51.16</td>
+          </tr>
+          <tr>
+            <td>114</td>
+            <td>2025-10-14 22:31:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9604.71</td>
+            <td>9601.21</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$50.41</td>
+          </tr>
+          <tr>
+            <td>115</td>
+            <td>2025-10-14 23:34:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9608.05</td>
+            <td>9604.55</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$49.66</td>
+          </tr>
+          <tr>
+            <td>116</td>
+            <td>2025-10-14 23:34:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9608.05</td>
+            <td>9604.55</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$48.91</td>
+          </tr>
+          <tr>
+            <td>117</td>
+            <td>2025-10-15 04:45:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9596.15</td>
+            <td>9592.65</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$48.16</td>
+          </tr>
+          <tr>
+            <td>118</td>
+            <td>2025-10-15 04:45:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9596.15</td>
+            <td>9592.65</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$47.41</td>
+          </tr>
+          <tr>
+            <td>119</td>
+            <td>2025-10-15 22:47:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9605.05</td>
+            <td>9601.55</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$46.66</td>
+          </tr>
+          <tr>
+            <td>120</td>
+            <td>2025-10-15 22:47:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9605.05</td>
+            <td>9601.55</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$45.91</td>
+          </tr>
+          <tr>
+            <td>121</td>
+            <td>2025-10-16 00:04:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9599.16</td>
+            <td>9595.66</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$45.16</td>
+          </tr>
+          <tr>
+            <td>122</td>
+            <td>2025-10-16 00:04:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9599.16</td>
+            <td>9595.66</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$44.41</td>
+          </tr>
+          <tr>
+            <td>123</td>
+            <td>2025-10-16 02:14:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9603.96</td>
+            <td>9600.46</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$43.66</td>
+          </tr>
+          <tr>
+            <td>124</td>
+            <td>2025-10-16 02:14:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9603.96</td>
+            <td>9600.46</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$42.91</td>
+          </tr>
+          <tr>
+            <td>125</td>
+            <td>2025-10-16 06:58:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9594.64</td>
+            <td>9604.05</td>
+            <td class="win-text">$1.83</td>
+            <td>$44.75</td>
+          </tr>
+          <tr>
+            <td>126</td>
+            <td>2025-10-16 06:58:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9594.64</td>
+            <td>9604.05</td>
+            <td class="win-text">$1.83</td>
+            <td>$46.58</td>
+          </tr>
+          <tr>
+            <td>127</td>
+            <td>2025-10-16 14:25:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9594.15</td>
+            <td>9590.65</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$45.83</td>
+          </tr>
+          <tr>
+            <td>128</td>
+            <td>2025-10-16 14:25:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9594.15</td>
+            <td>9590.65</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$45.08</td>
+          </tr>
+          <tr>
+            <td>129</td>
+            <td>2025-10-16 16:18:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9535.79</td>
+            <td>9532.29</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$44.33</td>
+          </tr>
+          <tr>
+            <td>130</td>
+            <td>2025-10-16 16:18:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9535.79</td>
+            <td>9532.29</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$43.58</td>
+          </tr>
+          <tr>
+            <td>131</td>
+            <td>2025-10-17 19:45:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9501.32</td>
+            <td>9510.76</td>
+            <td class="win-text">$1.84</td>
+            <td>$45.42</td>
+          </tr>
+          <tr>
+            <td>132</td>
+            <td>2025-10-17 19:45:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9501.32</td>
+            <td>9510.76</td>
+            <td class="win-text">$1.84</td>
+            <td>$47.26</td>
+          </tr>
+          <tr>
+            <td>133</td>
+            <td>2025-10-18 12:04:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9604.43</td>
+            <td>9600.93</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$46.51</td>
+          </tr>
+          <tr>
+            <td>134</td>
+            <td>2025-10-18 12:04:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9604.43</td>
+            <td>9600.93</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$45.76</td>
+          </tr>
+          <tr>
+            <td>135</td>
+            <td>2025-10-18 14:38:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9590.21</td>
+            <td>9586.71</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$45.01</td>
+          </tr>
+          <tr>
+            <td>136</td>
+            <td>2025-10-18 14:38:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9590.21</td>
+            <td>9586.71</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$44.26</td>
+          </tr>
+          <tr>
+            <td>137</td>
+            <td>2025-10-18 15:45:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9595.56</td>
+            <td>9601.17</td>
+            <td class="win-text">$1.07</td>
+            <td>$45.33</td>
+          </tr>
+          <tr>
+            <td>138</td>
+            <td>2025-10-18 15:45:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9595.56</td>
+            <td>9601.17</td>
+            <td class="win-text">$1.07</td>
+            <td>$46.40</td>
+          </tr>
+          <tr>
+            <td>139</td>
+            <td>2025-10-19 21:12:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9610.57</td>
+            <td>9607.07</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$45.65</td>
+          </tr>
+          <tr>
+            <td>140</td>
+            <td>2025-10-19 21:12:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9610.57</td>
+            <td>9607.07</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$44.90</td>
+          </tr>
+          <tr>
+            <td>141</td>
+            <td>2025-10-19 22:34:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9596.81</td>
+            <td>9593.31</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$44.15</td>
+          </tr>
+          <tr>
+            <td>142</td>
+            <td>2025-10-19 22:34:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9596.81</td>
+            <td>9593.31</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$43.40</td>
+          </tr>
+          <tr>
+            <td>143</td>
+            <td>2025-10-20 02:47:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9594.07</td>
+            <td>9590.57</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$42.65</td>
+          </tr>
+          <tr>
+            <td>144</td>
+            <td>2025-10-20 02:47:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9594.07</td>
+            <td>9590.57</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$41.90</td>
+          </tr>
+          <tr>
+            <td>145</td>
+            <td>2025-10-20 10:15:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9463.87</td>
+            <td>9469.21</td>
+            <td class="win-text">$1.02</td>
+            <td>$42.92</td>
+          </tr>
+          <tr>
+            <td>146</td>
+            <td>2025-10-20 10:15:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9463.87</td>
+            <td>9469.21</td>
+            <td class="win-text">$1.02</td>
+            <td>$43.94</td>
+          </tr>
+          <tr>
+            <td>147</td>
+            <td>2025-10-20 16:18:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9467.40</td>
+            <td>9485.26</td>
+            <td class="win-text">$3.52</td>
+            <td>$47.46</td>
+          </tr>
+          <tr>
+            <td>148</td>
+            <td>2025-10-20 16:18:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9467.40</td>
+            <td>9485.26</td>
+            <td class="win-text">$3.52</td>
+            <td>$50.98</td>
+          </tr>
+          <tr>
+            <td>149</td>
+            <td>2025-10-20 23:03:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9466.60</td>
+            <td>9463.10</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$50.23</td>
+          </tr>
+          <tr>
+            <td>150</td>
+            <td>2025-10-20 23:03:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9466.60</td>
+            <td>9463.10</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$49.48</td>
+          </tr>
+          <tr>
+            <td>151</td>
+            <td>2025-10-22 09:25:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9442.62</td>
+            <td>9439.12</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$48.73</td>
+          </tr>
+          <tr>
+            <td>152</td>
+            <td>2025-10-22 09:25:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9442.62</td>
+            <td>9439.12</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$47.98</td>
+          </tr>
+          <tr>
+            <td>153</td>
+            <td>2025-10-22 10:42:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9441.25</td>
+            <td>9437.75</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$47.23</td>
+          </tr>
+          <tr>
+            <td>154</td>
+            <td>2025-10-22 10:42:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9441.25</td>
+            <td>9437.75</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$46.48</td>
+          </tr>
+          <tr>
+            <td>155</td>
+            <td>2025-10-22 12:07:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9439.75</td>
+            <td>9436.25</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$45.73</td>
+          </tr>
+          <tr>
+            <td>156</td>
+            <td>2025-10-22 12:07:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9439.75</td>
+            <td>9436.25</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$44.98</td>
+          </tr>
+          <tr>
+            <td>157</td>
+            <td>2025-10-22 13:24:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9444.88</td>
+            <td>9441.38</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$44.23</td>
+          </tr>
+          <tr>
+            <td>158</td>
+            <td>2025-10-22 13:24:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9444.88</td>
+            <td>9441.38</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$43.48</td>
+          </tr>
+          <tr>
+            <td>159</td>
+            <td>2025-10-22 15:11:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9439.33</td>
+            <td>9435.83</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$42.73</td>
+          </tr>
+          <tr>
+            <td>160</td>
+            <td>2025-10-22 15:11:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9439.33</td>
+            <td>9435.83</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$41.98</td>
+          </tr>
+          <tr>
+            <td>161</td>
+            <td>2025-10-23 01:42:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9286.76</td>
+            <td>9287.16</td>
+            <td class="win-text">$0.03</td>
+            <td>$42.01</td>
+          </tr>
+          <tr>
+            <td>162</td>
+            <td>2025-10-23 01:42:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9286.76</td>
+            <td>9287.16</td>
+            <td class="win-text">$0.03</td>
+            <td>$42.04</td>
+          </tr>
+          <tr>
+            <td>163</td>
+            <td>2025-10-23 06:43:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9434.68</td>
+            <td>9431.18</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$41.29</td>
+          </tr>
+          <tr>
+            <td>164</td>
+            <td>2025-10-23 06:43:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9434.68</td>
+            <td>9431.18</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$40.54</td>
+          </tr>
+          <tr>
+            <td>165</td>
+            <td>2025-10-23 08:08:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9426.44</td>
+            <td>9422.94</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$39.79</td>
+          </tr>
+          <tr>
+            <td>166</td>
+            <td>2025-10-23 08:08:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9426.44</td>
+            <td>9422.94</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$39.04</td>
+          </tr>
+          <tr>
+            <td>167</td>
+            <td>2025-10-23 10:05:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9424.01</td>
+            <td>9420.51</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$38.29</td>
+          </tr>
+          <tr>
+            <td>168</td>
+            <td>2025-10-23 10:05:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9424.01</td>
+            <td>9420.51</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$37.54</td>
+          </tr>
+          <tr>
+            <td>169</td>
+            <td>2025-10-23 21:45:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9294.96</td>
+            <td>9300.15</td>
+            <td class="win-text">$0.99</td>
+            <td>$38.53</td>
+          </tr>
+          <tr>
+            <td>170</td>
+            <td>2025-10-23 21:45:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9294.96</td>
+            <td>9300.15</td>
+            <td class="win-text">$0.99</td>
+            <td>$39.52</td>
+          </tr>
+          <tr>
+            <td>171</td>
+            <td>2025-10-24 01:31:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9420.56</td>
+            <td>9417.06</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$38.77</td>
+          </tr>
+          <tr>
+            <td>172</td>
+            <td>2025-10-24 01:31:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9420.56</td>
+            <td>9417.06</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$38.02</td>
+          </tr>
+          <tr>
+            <td>173</td>
+            <td>2025-10-24 02:28:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9418.86</td>
+            <td>9439.86</td>
+            <td class="win-text">$4.15</td>
+            <td>$42.17</td>
+          </tr>
+          <tr>
+            <td>174</td>
+            <td>2025-10-24 02:28:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9418.86</td>
+            <td>9439.86</td>
+            <td class="win-text">$4.15</td>
+            <td>$46.32</td>
+          </tr>
+          <tr>
+            <td>175</td>
+            <td>2025-10-24 04:42:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9422.23</td>
+            <td>9437.30</td>
+            <td class="win-text">$2.96</td>
+            <td>$49.28</td>
+          </tr>
+          <tr>
+            <td>176</td>
+            <td>2025-10-24 04:42:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9422.23</td>
+            <td>9437.30</td>
+            <td class="win-text">$2.96</td>
+            <td>$52.24</td>
+          </tr>
+          <tr>
+            <td>177</td>
+            <td>2025-10-24 06:31:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9416.06</td>
+            <td>9412.56</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$51.49</td>
+          </tr>
+          <tr>
+            <td>178</td>
+            <td>2025-10-24 06:31:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9416.06</td>
+            <td>9412.56</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$50.74</td>
+          </tr>
+          <tr>
+            <td>179</td>
+            <td>2025-10-24 07:31:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9414.13</td>
+            <td>9410.63</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$49.99</td>
+          </tr>
+          <tr>
+            <td>180</td>
+            <td>2025-10-24 07:31:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9414.13</td>
+            <td>9410.63</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$49.24</td>
+          </tr>
+          <tr>
+            <td>181</td>
+            <td>2025-10-24 08:44:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9410.47</td>
+            <td>9406.97</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$48.49</td>
+          </tr>
+          <tr>
+            <td>182</td>
+            <td>2025-10-24 08:44:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9410.47</td>
+            <td>9406.97</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$47.74</td>
+          </tr>
+          <tr>
+            <td>183</td>
+            <td>2025-10-24 10:21:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9417.81</td>
+            <td>9414.31</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$46.99</td>
+          </tr>
+          <tr>
+            <td>184</td>
+            <td>2025-10-24 10:21:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9417.81</td>
+            <td>9414.31</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$46.24</td>
+          </tr>
+          <tr>
+            <td>185</td>
+            <td>2025-10-24 12:08:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9417.14</td>
+            <td>9413.64</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$45.49</td>
+          </tr>
+          <tr>
+            <td>186</td>
+            <td>2025-10-24 12:08:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9417.14</td>
+            <td>9413.64</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$44.74</td>
+          </tr>
+          <tr>
+            <td>187</td>
+            <td>2025-10-24 21:46:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9467.07</td>
+            <td>9472.22</td>
+            <td class="win-text">$0.98</td>
+            <td>$45.73</td>
+          </tr>
+          <tr>
+            <td>188</td>
+            <td>2025-10-24 21:46:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9467.07</td>
+            <td>9472.22</td>
+            <td class="win-text">$0.98</td>
+            <td>$46.71</td>
+          </tr>
+          <tr>
+            <td>189</td>
+            <td>2025-10-25 07:26:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9535.59</td>
+            <td>9542.65</td>
+            <td class="win-text">$1.36</td>
+            <td>$48.07</td>
+          </tr>
+          <tr>
+            <td>190</td>
+            <td>2025-10-25 07:26:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9535.59</td>
+            <td>9542.65</td>
+            <td class="win-text">$1.36</td>
+            <td>$49.43</td>
+          </tr>
+          <tr>
+            <td>191</td>
+            <td>2025-10-27 09:04:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9702.35</td>
+            <td>9698.85</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$48.68</td>
+          </tr>
+          <tr>
+            <td>192</td>
+            <td>2025-10-27 09:04:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9702.35</td>
+            <td>9698.85</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$47.93</td>
+          </tr>
+          <tr>
+            <td>193</td>
+            <td>2025-10-27 14:48:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9700.08</td>
+            <td>9696.58</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$47.18</td>
+          </tr>
+          <tr>
+            <td>194</td>
+            <td>2025-10-27 14:48:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9700.08</td>
+            <td>9696.58</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$46.43</td>
+          </tr>
+          <tr>
+            <td>195</td>
+            <td>2025-10-27 16:02:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9702.50</td>
+            <td>9699.00</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$45.68</td>
+          </tr>
+          <tr>
+            <td>196</td>
+            <td>2025-10-27 16:02:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9702.50</td>
+            <td>9699.00</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$44.93</td>
+          </tr>
+          <tr>
+            <td>197</td>
+            <td>2025-10-27 18:46:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9702.78</td>
+            <td>9699.28</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$44.18</td>
+          </tr>
+          <tr>
+            <td>198</td>
+            <td>2025-10-27 18:46:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9702.78</td>
+            <td>9699.28</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$43.43</td>
+          </tr>
+          <tr>
+            <td>199</td>
+            <td>2025-10-27 19:46:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9700.59</td>
+            <td>9697.09</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$42.68</td>
+          </tr>
+          <tr>
+            <td>200</td>
+            <td>2025-10-27 19:46:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9700.59</td>
+            <td>9697.09</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$41.93</td>
+          </tr>
+          <tr>
+            <td>201</td>
+            <td>2025-10-27 21:15:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9643.49</td>
+            <td>9663.17</td>
+            <td class="win-text">$3.89</td>
+            <td>$45.82</td>
+          </tr>
+          <tr>
+            <td>202</td>
+            <td>2025-10-27 21:15:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9643.49</td>
+            <td>9663.17</td>
+            <td class="win-text">$3.89</td>
+            <td>$49.70</td>
+          </tr>
+          <tr>
+            <td>203</td>
+            <td>2025-10-28 04:28:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9680.69</td>
+            <td>9680.98</td>
+            <td class="win-text">$0.01</td>
+            <td>$49.71</td>
+          </tr>
+          <tr>
+            <td>204</td>
+            <td>2025-10-28 04:28:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9680.69</td>
+            <td>9680.98</td>
+            <td class="win-text">$0.01</td>
+            <td>$49.72</td>
+          </tr>
+          <tr>
+            <td>205</td>
+            <td>2025-10-28 20:56:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9692.54</td>
+            <td>9689.04</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$48.97</td>
+          </tr>
+          <tr>
+            <td>206</td>
+            <td>2025-10-28 20:56:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9692.54</td>
+            <td>9689.04</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$48.22</td>
+          </tr>
+          <tr>
+            <td>207</td>
+            <td>2025-10-29 08:30:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9695.11</td>
+            <td>9695.86</td>
+            <td class="win-text">$0.10</td>
+            <td>$48.32</td>
+          </tr>
+          <tr>
+            <td>208</td>
+            <td>2025-10-29 08:30:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9695.11</td>
+            <td>9695.86</td>
+            <td class="win-text">$0.10</td>
+            <td>$48.42</td>
+          </tr>
+          <tr>
+            <td>209</td>
+            <td>2025-10-30 08:16:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9810.85</td>
+            <td>9835.73</td>
+            <td class="win-text">$4.93</td>
+            <td>$53.34</td>
+          </tr>
+          <tr>
+            <td>210</td>
+            <td>2025-10-30 08:16:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9810.85</td>
+            <td>9835.73</td>
+            <td class="win-text">$4.93</td>
+            <td>$58.27</td>
+          </tr>
+          <tr>
+            <td>211</td>
+            <td>2025-10-31 11:14:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9877.98</td>
+            <td>9874.48</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$57.52</td>
+          </tr>
+          <tr>
+            <td>212</td>
+            <td>2025-10-31 11:14:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9877.98</td>
+            <td>9874.48</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$56.77</td>
+          </tr>
+          <tr>
+            <td>213</td>
+            <td>2025-10-31 12:50:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9870.40</td>
+            <td>9866.90</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$56.02</td>
+          </tr>
+          <tr>
+            <td>214</td>
+            <td>2025-10-31 12:50:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9870.40</td>
+            <td>9866.90</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$55.27</td>
+          </tr>
+          <tr>
+            <td>215</td>
+            <td>2025-10-31 17:14:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9779.22</td>
+            <td>9808.98</td>
+            <td class="win-text">$5.90</td>
+            <td>$61.17</td>
+          </tr>
+          <tr>
+            <td>216</td>
+            <td>2025-10-31 17:14:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9779.22</td>
+            <td>9808.98</td>
+            <td class="win-text">$5.90</td>
+            <td>$67.07</td>
+          </tr>
+          <tr>
+            <td>217</td>
+            <td>2025-11-01 23:52:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9781.74</td>
+            <td>9778.24</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$66.32</td>
+          </tr>
+          <tr>
+            <td>218</td>
+            <td>2025-11-01 23:52:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9781.74</td>
+            <td>9778.24</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$65.57</td>
+          </tr>
+          <tr>
+            <td>219</td>
+            <td>2025-11-02 03:04:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9775.33</td>
+            <td>9771.83</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$64.82</td>
+          </tr>
+          <tr>
+            <td>220</td>
+            <td>2025-11-02 03:04:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9775.33</td>
+            <td>9771.83</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$64.07</td>
+          </tr>
+          <tr>
+            <td>221</td>
+            <td>2025-11-02 05:32:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9705.26</td>
+            <td>9701.76</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$63.32</td>
+          </tr>
+          <tr>
+            <td>222</td>
+            <td>2025-11-02 05:32:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9705.26</td>
+            <td>9701.76</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$62.57</td>
+          </tr>
+          <tr>
+            <td>223</td>
+            <td>2025-11-02 07:31:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9708.04</td>
+            <td>9704.54</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$61.82</td>
+          </tr>
+          <tr>
+            <td>224</td>
+            <td>2025-11-02 07:31:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9708.04</td>
+            <td>9704.54</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$61.07</td>
+          </tr>
+          <tr>
+            <td>225</td>
+            <td>2025-11-02 08:39:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9687.63</td>
+            <td>9696.35</td>
+            <td class="win-text">$1.69</td>
+            <td>$62.77</td>
+          </tr>
+          <tr>
+            <td>226</td>
+            <td>2025-11-02 08:39:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9687.63</td>
+            <td>9696.35</td>
+            <td class="win-text">$1.69</td>
+            <td>$64.46</td>
+          </tr>
+          <tr>
+            <td>227</td>
+            <td>2025-11-05 14:38:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>10120.43</td>
+            <td>10116.93</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$63.71</td>
+          </tr>
+          <tr>
+            <td>228</td>
+            <td>2025-11-05 14:38:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>10120.43</td>
+            <td>10116.93</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$62.96</td>
+          </tr>
+          <tr>
+            <td>229</td>
+            <td>2025-11-05 18:44:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>10118.58</td>
+            <td>10115.08</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$62.21</td>
+          </tr>
+          <tr>
+            <td>230</td>
+            <td>2025-11-05 18:44:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>10118.58</td>
+            <td>10115.08</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$61.46</td>
+          </tr>
+          <tr>
+            <td>231</td>
+            <td>2025-11-06 17:43:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>10048.49</td>
+            <td>10044.99</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$60.71</td>
+          </tr>
+          <tr>
+            <td>232</td>
+            <td>2025-11-06 17:43:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>10048.49</td>
+            <td>10044.99</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$59.96</td>
+          </tr>
+          <tr>
+            <td>233</td>
+            <td>2025-11-09 18:08:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>10082.31</td>
+            <td>10090.44</td>
+            <td class="win-text">$1.58</td>
+            <td>$61.54</td>
+          </tr>
+          <tr>
+            <td>234</td>
+            <td>2025-11-09 18:08:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>10082.31</td>
+            <td>10090.44</td>
+            <td class="win-text">$1.58</td>
+            <td>$63.11</td>
+          </tr>
+          <tr>
+            <td>235</td>
+            <td>2025-11-10 02:05:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>10081.57</td>
+            <td>10078.07</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$62.36</td>
+          </tr>
+          <tr>
+            <td>236</td>
+            <td>2025-11-10 02:05:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>10081.57</td>
+            <td>10078.07</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$61.61</td>
+          </tr>
+          <tr>
+            <td>237</td>
+            <td>2025-11-10 04:28:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>10071.29</td>
+            <td>10067.79</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$60.86</td>
+          </tr>
+          <tr>
+            <td>238</td>
+            <td>2025-11-10 04:28:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>10071.29</td>
+            <td>10067.79</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$60.11</td>
+          </tr>
+          <tr>
+            <td>239</td>
+            <td>2025-11-10 17:06:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9851.46</td>
+            <td>9869.42</td>
+            <td class="win-text">$3.54</td>
+            <td>$63.66</td>
+          </tr>
+          <tr>
+            <td>240</td>
+            <td>2025-11-10 17:06:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9851.46</td>
+            <td>9869.42</td>
+            <td class="win-text">$3.54</td>
+            <td>$67.20</td>
+          </tr>
+          <tr>
+            <td>241</td>
+            <td>2025-11-10 23:53:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9851.17</td>
+            <td>9847.67</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$66.45</td>
+          </tr>
+          <tr>
+            <td>242</td>
+            <td>2025-11-10 23:53:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9851.17</td>
+            <td>9847.67</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$65.70</td>
+          </tr>
+          <tr>
+            <td>243</td>
+            <td>2025-11-11 11:05:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9794.70</td>
+            <td>9823.98</td>
+            <td class="win-text">$5.80</td>
+            <td>$71.50</td>
+          </tr>
+          <tr>
+            <td>244</td>
+            <td>2025-11-11 11:05:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9794.70</td>
+            <td>9823.98</td>
+            <td class="win-text">$5.80</td>
+            <td>$77.31</td>
+          </tr>
+          <tr>
+            <td>245</td>
+            <td>2025-11-11 22:28:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9802.59</td>
+            <td>9830.68</td>
+            <td class="win-text">$5.57</td>
+            <td>$82.87</td>
+          </tr>
+          <tr>
+            <td>246</td>
+            <td>2025-11-11 22:28:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9802.59</td>
+            <td>9830.68</td>
+            <td class="win-text">$5.57</td>
+            <td>$88.44</td>
+          </tr>
+          <tr>
+            <td>247</td>
+            <td>2025-11-12 14:55:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9799.92</td>
+            <td>9796.42</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$87.69</td>
+          </tr>
+          <tr>
+            <td>248</td>
+            <td>2025-11-12 14:55:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9799.92</td>
+            <td>9796.42</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$86.94</td>
+          </tr>
+          <tr>
+            <td>249</td>
+            <td>2025-11-12 18:09:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9804.10</td>
+            <td>9800.60</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$86.19</td>
+          </tr>
+          <tr>
+            <td>250</td>
+            <td>2025-11-12 18:09:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9804.10</td>
+            <td>9800.60</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$85.44</td>
+          </tr>
+          <tr>
+            <td>251</td>
+            <td>2025-11-12 20:36:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9805.41</td>
+            <td>9818.48</td>
+            <td class="win-text">$2.56</td>
+            <td>$88.01</td>
+          </tr>
+          <tr>
+            <td>252</td>
+            <td>2025-11-12 20:36:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9805.41</td>
+            <td>9818.48</td>
+            <td class="win-text">$2.56</td>
+            <td>$90.57</td>
+          </tr>
+          <tr>
+            <td>253</td>
+            <td>2025-11-12 22:03:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9795.79</td>
+            <td>9792.29</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$89.82</td>
+          </tr>
+          <tr>
+            <td>254</td>
+            <td>2025-11-12 22:03:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9795.79</td>
+            <td>9792.29</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$89.07</td>
+          </tr>
+          <tr>
+            <td>255</td>
+            <td>2025-11-12 23:03:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9801.28</td>
+            <td>9797.78</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$88.32</td>
+          </tr>
+          <tr>
+            <td>256</td>
+            <td>2025-11-12 23:03:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9801.28</td>
+            <td>9797.78</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$87.57</td>
+          </tr>
+          <tr>
+            <td>257</td>
+            <td>2025-11-13 19:37:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9737.58</td>
+            <td>9734.08</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$86.82</td>
+          </tr>
+          <tr>
+            <td>258</td>
+            <td>2025-11-13 19:37:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9737.58</td>
+            <td>9734.08</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$86.07</td>
+          </tr>
+          <tr>
+            <td>259</td>
+            <td>2025-11-14 12:27:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9704.97</td>
+            <td>9701.47</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$85.32</td>
+          </tr>
+          <tr>
+            <td>260</td>
+            <td>2025-11-14 12:27:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9704.97</td>
+            <td>9701.47</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$84.57</td>
+          </tr>
+          <tr>
+            <td>261</td>
+            <td>2025-11-14 19:38:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9629.10</td>
+            <td>9657.13</td>
+            <td class="win-text">$5.56</td>
+            <td>$90.13</td>
+          </tr>
+          <tr>
+            <td>262</td>
+            <td>2025-11-14 19:38:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9629.10</td>
+            <td>9657.13</td>
+            <td class="win-text">$5.56</td>
+            <td>$95.69</td>
+          </tr>
+          <tr>
+            <td>263</td>
+            <td>2025-11-16 10:31:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9773.61</td>
+            <td>9785.79</td>
+            <td class="win-text">$2.39</td>
+            <td>$98.07</td>
+          </tr>
+          <tr>
+            <td>264</td>
+            <td>2025-11-16 10:31:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9773.61</td>
+            <td>9785.79</td>
+            <td class="win-text">$2.39</td>
+            <td>$100.46</td>
+          </tr>
+          <tr>
+            <td>265</td>
+            <td>2025-11-16 19:54:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9773.76</td>
+            <td>9770.26</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$99.71</td>
+          </tr>
+          <tr>
+            <td>266</td>
+            <td>2025-11-16 19:54:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9773.76</td>
+            <td>9770.26</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$98.96</td>
+          </tr>
+          <tr>
+            <td>267</td>
+            <td>2025-11-16 20:58:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9775.86</td>
+            <td>9772.36</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$98.21</td>
+          </tr>
+          <tr>
+            <td>268</td>
+            <td>2025-11-16 20:58:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9775.86</td>
+            <td>9772.36</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$97.46</td>
+          </tr>
+          <tr>
+            <td>269</td>
+            <td>2025-11-16 22:33:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9762.94</td>
+            <td>9759.44</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$96.71</td>
+          </tr>
+          <tr>
+            <td>270</td>
+            <td>2025-11-16 22:33:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9762.94</td>
+            <td>9759.44</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$95.96</td>
+          </tr>
+          <tr>
+            <td>271</td>
+            <td>2025-11-18 13:55:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9421.55</td>
+            <td>9418.05</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$95.21</td>
+          </tr>
+          <tr>
+            <td>272</td>
+            <td>2025-11-18 13:55:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9421.55</td>
+            <td>9418.05</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$94.46</td>
+          </tr>
+          <tr>
+            <td>273</td>
+            <td>2025-11-21 05:28:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9509.83</td>
+            <td>9512.19</td>
+            <td class="win-text">$0.42</td>
+            <td>$94.88</td>
+          </tr>
+          <tr>
+            <td>274</td>
+            <td>2025-11-21 05:28:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9509.83</td>
+            <td>9512.19</td>
+            <td class="win-text">$0.42</td>
+            <td>$95.30</td>
+          </tr>
+          <tr>
+            <td>275</td>
+            <td>2025-11-22 01:05:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9569.98</td>
+            <td>9579.98</td>
+            <td class="win-text">$1.95</td>
+            <td>$97.25</td>
+          </tr>
+          <tr>
+            <td>276</td>
+            <td>2025-11-22 01:05:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9569.98</td>
+            <td>9579.98</td>
+            <td class="win-text">$1.95</td>
+            <td>$99.20</td>
+          </tr>
+          <tr>
+            <td>277</td>
+            <td>2025-11-22 06:40:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9565.62</td>
+            <td>9567.50</td>
+            <td class="win-text">$0.33</td>
+            <td>$99.53</td>
+          </tr>
+          <tr>
+            <td>278</td>
+            <td>2025-11-22 06:40:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9565.62</td>
+            <td>9567.50</td>
+            <td class="win-text">$0.33</td>
+            <td>$99.85</td>
+          </tr>
+          <tr>
+            <td>279</td>
+            <td>2025-11-22 22:25:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9570.45</td>
+            <td>9575.11</td>
+            <td class="win-text">$0.88</td>
+            <td>$100.73</td>
+          </tr>
+          <tr>
+            <td>280</td>
+            <td>2025-11-22 22:25:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9570.45</td>
+            <td>9575.11</td>
+            <td class="win-text">$0.88</td>
+            <td>$101.61</td>
+          </tr>
+          <tr>
+            <td>281</td>
+            <td>2025-11-23 19:22:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9555.74</td>
+            <td>9552.24</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$100.86</td>
+          </tr>
+          <tr>
+            <td>282</td>
+            <td>2025-11-23 19:22:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9555.74</td>
+            <td>9552.24</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$100.11</td>
+          </tr>
+          <tr>
+            <td>283</td>
+            <td>2025-11-25 03:50:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9751.17</td>
+            <td>9755.94</td>
+            <td class="win-text">$0.91</td>
+            <td>$101.02</td>
+          </tr>
+          <tr>
+            <td>284</td>
+            <td>2025-11-25 03:50:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9751.17</td>
+            <td>9755.94</td>
+            <td class="win-text">$0.91</td>
+            <td>$101.92</td>
+          </tr>
+          <tr>
+            <td>285</td>
+            <td>2025-11-25 23:51:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9769.59</td>
+            <td>9774.89</td>
+            <td class="win-text">$1.01</td>
+            <td>$102.93</td>
+          </tr>
+          <tr>
+            <td>286</td>
+            <td>2025-11-25 23:51:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9769.59</td>
+            <td>9774.89</td>
+            <td class="win-text">$1.01</td>
+            <td>$103.94</td>
+          </tr>
+          <tr>
+            <td>287</td>
+            <td>2025-11-26 09:41:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9769.75</td>
+            <td>9777.58</td>
+            <td class="win-text">$1.52</td>
+            <td>$105.46</td>
+          </tr>
+          <tr>
+            <td>288</td>
+            <td>2025-11-26 09:41:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9769.75</td>
+            <td>9777.58</td>
+            <td class="win-text">$1.52</td>
+            <td>$106.97</td>
+          </tr>
+          <tr>
+            <td>289</td>
+            <td>2025-11-26 10:45:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9753.97</td>
+            <td>9750.47</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$106.22</td>
+          </tr>
+          <tr>
+            <td>290</td>
+            <td>2025-11-26 10:45:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9753.97</td>
+            <td>9750.47</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$105.47</td>
+          </tr>
+          <tr>
+            <td>291</td>
+            <td>2025-11-26 13:35:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9773.91</td>
+            <td>9777.13</td>
+            <td class="win-text">$0.59</td>
+            <td>$106.07</td>
+          </tr>
+          <tr>
+            <td>292</td>
+            <td>2025-11-26 13:35:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9773.91</td>
+            <td>9777.13</td>
+            <td class="win-text">$0.59</td>
+            <td>$106.66</td>
+          </tr>
+          <tr>
+            <td>293</td>
+            <td>2025-11-26 14:38:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9742.98</td>
+            <td>9749.61</td>
+            <td class="win-text">$1.27</td>
+            <td>$107.94</td>
+          </tr>
+          <tr>
+            <td>294</td>
+            <td>2025-11-26 14:38:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9742.98</td>
+            <td>9749.61</td>
+            <td class="win-text">$1.27</td>
+            <td>$109.21</td>
+          </tr>
+          <tr>
+            <td>295</td>
+            <td>2025-11-28 17:20:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9856.26</td>
+            <td>9852.76</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$108.46</td>
+          </tr>
+          <tr>
+            <td>296</td>
+            <td>2025-11-28 17:20:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9856.26</td>
+            <td>9852.76</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$107.71</td>
+          </tr>
+          <tr>
+            <td>297</td>
+            <td>2025-11-29 05:37:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9756.97</td>
+            <td>9753.47</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$106.96</td>
+          </tr>
+          <tr>
+            <td>298</td>
+            <td>2025-11-29 05:37:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9756.97</td>
+            <td>9753.47</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$106.21</td>
+          </tr>
+          <tr>
+            <td>299</td>
+            <td>2025-11-29 06:42:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9767.17</td>
+            <td>9768.83</td>
+            <td class="win-text">$0.28</td>
+            <td>$106.49</td>
+          </tr>
+          <tr>
+            <td>300</td>
+            <td>2025-11-29 06:42:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9767.17</td>
+            <td>9768.83</td>
+            <td class="win-text">$0.28</td>
+            <td>$106.78</td>
+          </tr>
+          <tr>
+            <td>301</td>
+            <td>2025-11-29 08:23:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9753.69</td>
+            <td>9750.19</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$106.03</td>
+          </tr>
+          <tr>
+            <td>302</td>
+            <td>2025-11-29 08:23:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9753.69</td>
+            <td>9750.19</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$105.28</td>
+          </tr>
+          <tr>
+            <td>303</td>
+            <td>2025-11-29 09:32:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9764.44</td>
+            <td>9777.47</td>
+            <td class="win-text">$2.56</td>
+            <td>$107.83</td>
+          </tr>
+          <tr>
+            <td>304</td>
+            <td>2025-11-29 09:32:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9764.44</td>
+            <td>9777.47</td>
+            <td class="win-text">$2.56</td>
+            <td>$110.39</td>
+          </tr>
+          <tr>
+            <td>305</td>
+            <td>2025-11-29 10:52:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9765.08</td>
+            <td>9761.58</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$109.64</td>
+          </tr>
+          <tr>
+            <td>306</td>
+            <td>2025-11-29 10:52:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9765.08</td>
+            <td>9761.58</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$108.89</td>
+          </tr>
+          <tr>
+            <td>307</td>
+            <td>2025-11-29 23:55:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9727.91</td>
+            <td>9724.41</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$108.14</td>
+          </tr>
+          <tr>
+            <td>308</td>
+            <td>2025-11-29 23:55:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9727.91</td>
+            <td>9724.41</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$107.39</td>
+          </tr>
+          <tr>
+            <td>309</td>
+            <td>2025-11-30 03:34:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9723.72</td>
+            <td>9724.03</td>
+            <td class="win-text">$0.01</td>
+            <td>$107.40</td>
+          </tr>
+          <tr>
+            <td>310</td>
+            <td>2025-11-30 03:34:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9723.72</td>
+            <td>9724.03</td>
+            <td class="win-text">$0.01</td>
+            <td>$107.41</td>
+          </tr>
+          <tr>
+            <td>311</td>
+            <td>2025-11-30 04:46:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9714.30</td>
+            <td>9710.80</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$106.66</td>
+          </tr>
+          <tr>
+            <td>312</td>
+            <td>2025-11-30 04:46:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9714.30</td>
+            <td>9710.80</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$105.91</td>
+          </tr>
+          <tr>
+            <td>313</td>
+            <td>2025-11-30 07:36:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9682.33</td>
+            <td>9690.55</td>
+            <td class="win-text">$1.59</td>
+            <td>$107.51</td>
+          </tr>
+          <tr>
+            <td>314</td>
+            <td>2025-11-30 07:36:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9682.33</td>
+            <td>9690.55</td>
+            <td class="win-text">$1.59</td>
+            <td>$109.10</td>
+          </tr>
+          <tr>
+            <td>315</td>
+            <td>2025-12-01 04:17:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9681.96</td>
+            <td>9687.03</td>
+            <td class="win-text">$0.97</td>
+            <td>$110.07</td>
+          </tr>
+          <tr>
+            <td>316</td>
+            <td>2025-12-01 04:17:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9681.96</td>
+            <td>9687.03</td>
+            <td class="win-text">$0.97</td>
+            <td>$111.03</td>
+          </tr>
+          <tr>
+            <td>317</td>
+            <td>2025-12-01 13:42:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9675.45</td>
+            <td>9671.95</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$110.28</td>
+          </tr>
+          <tr>
+            <td>318</td>
+            <td>2025-12-01 13:42:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9675.45</td>
+            <td>9671.95</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$109.53</td>
+          </tr>
+          <tr>
+            <td>319</td>
+            <td>2025-12-02 07:19:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9665.71</td>
+            <td>9666.39</td>
+            <td class="win-text">$0.09</td>
+            <td>$109.62</td>
+          </tr>
+          <tr>
+            <td>320</td>
+            <td>2025-12-02 07:19:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9665.71</td>
+            <td>9666.39</td>
+            <td class="win-text">$0.09</td>
+            <td>$109.71</td>
+          </tr>
+          <tr>
+            <td>321</td>
+            <td>2025-12-02 16:24:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9665.13</td>
+            <td>9670.30</td>
+            <td class="win-text">$0.98</td>
+            <td>$110.69</td>
+          </tr>
+          <tr>
+            <td>322</td>
+            <td>2025-12-02 16:24:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9665.13</td>
+            <td>9670.30</td>
+            <td class="win-text">$0.98</td>
+            <td>$111.67</td>
+          </tr>
+          <tr>
+            <td>323</td>
+            <td>2025-12-03 01:13:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9653.66</td>
+            <td>9650.16</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$110.92</td>
+          </tr>
+          <tr>
+            <td>324</td>
+            <td>2025-12-03 01:13:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9653.66</td>
+            <td>9650.16</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$110.17</td>
+          </tr>
+          <tr>
+            <td>325</td>
+            <td>2025-12-03 11:32:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9628.77</td>
+            <td>9636.33</td>
+            <td class="win-text">$1.46</td>
+            <td>$111.64</td>
+          </tr>
+          <tr>
+            <td>326</td>
+            <td>2025-12-03 11:32:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9628.77</td>
+            <td>9636.33</td>
+            <td class="win-text">$1.46</td>
+            <td>$113.10</td>
+          </tr>
+          <tr>
+            <td>327</td>
+            <td>2025-12-03 15:36:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9648.73</td>
+            <td>9656.44</td>
+            <td class="win-text">$1.49</td>
+            <td>$114.59</td>
+          </tr>
+          <tr>
+            <td>328</td>
+            <td>2025-12-03 15:36:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9648.73</td>
+            <td>9656.44</td>
+            <td class="win-text">$1.49</td>
+            <td>$116.08</td>
+          </tr>
+          <tr>
+            <td>329</td>
+            <td>2025-12-03 18:06:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9638.45</td>
+            <td>9634.95</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$115.33</td>
+          </tr>
+          <tr>
+            <td>330</td>
+            <td>2025-12-03 18:06:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9638.45</td>
+            <td>9634.95</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$114.58</td>
+          </tr>
+          <tr>
+            <td>331</td>
+            <td>2025-12-03 19:09:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9630.43</td>
+            <td>9642.03</td>
+            <td class="win-text">$2.27</td>
+            <td>$116.85</td>
+          </tr>
+          <tr>
+            <td>332</td>
+            <td>2025-12-03 19:09:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9630.43</td>
+            <td>9642.03</td>
+            <td class="win-text">$2.27</td>
+            <td>$119.12</td>
+          </tr>
+          <tr>
+            <td>333</td>
+            <td>2025-12-03 20:57:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9595.05</td>
+            <td>9599.94</td>
+            <td class="win-text">$0.93</td>
+            <td>$120.05</td>
+          </tr>
+          <tr>
+            <td>334</td>
+            <td>2025-12-03 20:57:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9595.05</td>
+            <td>9599.94</td>
+            <td class="win-text">$0.93</td>
+            <td>$120.97</td>
+          </tr>
+          <tr>
+            <td>335</td>
+            <td>2025-12-03 22:23:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9640.67</td>
+            <td>9645.18</td>
+            <td class="win-text">$0.85</td>
+            <td>$121.83</td>
+          </tr>
+          <tr>
+            <td>336</td>
+            <td>2025-12-03 22:23:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9640.67</td>
+            <td>9645.18</td>
+            <td class="win-text">$0.85</td>
+            <td>$122.68</td>
+          </tr>
+          <tr>
+            <td>337</td>
+            <td>2025-12-04 00:22:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9631.54</td>
+            <td>9628.04</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$121.93</td>
+          </tr>
+          <tr>
+            <td>338</td>
+            <td>2025-12-04 00:22:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9631.54</td>
+            <td>9628.04</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$121.18</td>
+          </tr>
+          <tr>
+            <td>339</td>
+            <td>2025-12-04 01:24:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9627.09</td>
+            <td>9623.59</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$120.43</td>
+          </tr>
+          <tr>
+            <td>340</td>
+            <td>2025-12-04 01:24:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9627.09</td>
+            <td>9623.59</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$119.68</td>
+          </tr>
+          <tr>
+            <td>341</td>
+            <td>2025-12-04 06:05:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9638.76</td>
+            <td>9655.01</td>
+            <td class="win-text">$3.20</td>
+            <td>$122.88</td>
+          </tr>
+          <tr>
+            <td>342</td>
+            <td>2025-12-04 06:05:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9638.76</td>
+            <td>9655.01</td>
+            <td class="win-text">$3.20</td>
+            <td>$126.08</td>
+          </tr>
+          <tr>
+            <td>343</td>
+            <td>2025-12-04 07:11:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9629.47</td>
+            <td>9637.60</td>
+            <td class="win-text">$1.58</td>
+            <td>$127.66</td>
+          </tr>
+          <tr>
+            <td>344</td>
+            <td>2025-12-04 07:11:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9629.47</td>
+            <td>9637.60</td>
+            <td class="win-text">$1.58</td>
+            <td>$129.23</td>
+          </tr>
+          <tr>
+            <td>345</td>
+            <td>2025-12-04 19:33:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9631.10</td>
+            <td>9627.60</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$128.48</td>
+          </tr>
+          <tr>
+            <td>346</td>
+            <td>2025-12-04 19:33:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9631.10</td>
+            <td>9627.60</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$127.73</td>
+          </tr>
+          <tr>
+            <td>347</td>
+            <td>2025-12-04 20:39:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9587.80</td>
+            <td>9598.64</td>
+            <td class="win-text">$2.12</td>
+            <td>$129.85</td>
+          </tr>
+          <tr>
+            <td>348</td>
+            <td>2025-12-04 20:39:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9587.80</td>
+            <td>9598.64</td>
+            <td class="win-text">$2.12</td>
+            <td>$131.97</td>
+          </tr>
+          <tr>
+            <td>349</td>
+            <td>2025-12-04 22:29:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9622.61</td>
+            <td>9619.11</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$131.22</td>
+          </tr>
+          <tr>
+            <td>350</td>
+            <td>2025-12-04 22:29:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9622.61</td>
+            <td>9619.11</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$130.47</td>
+          </tr>
+          <tr>
+            <td>351</td>
+            <td>2025-12-05 18:43:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9793.54</td>
+            <td>9799.98</td>
+            <td class="win-text">$1.24</td>
+            <td>$131.70</td>
+          </tr>
+          <tr>
+            <td>352</td>
+            <td>2025-12-05 18:43:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9793.54</td>
+            <td>9799.98</td>
+            <td class="win-text">$1.24</td>
+            <td>$132.94</td>
+          </tr>
+          <tr>
+            <td>353</td>
+            <td>2025-12-06 10:17:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9778.29</td>
+            <td>9796.67</td>
+            <td class="win-text">$3.63</td>
+            <td>$136.57</td>
+          </tr>
+          <tr>
+            <td>354</td>
+            <td>2025-12-06 10:17:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9778.29</td>
+            <td>9796.67</td>
+            <td class="win-text">$3.63</td>
+            <td>$140.19</td>
+          </tr>
+          <tr>
+            <td>355</td>
+            <td>2025-12-06 17:17:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9776.22</td>
+            <td>9772.72</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$139.44</td>
+          </tr>
+          <tr>
+            <td>356</td>
+            <td>2025-12-06 17:17:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9776.22</td>
+            <td>9772.72</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$138.69</td>
+          </tr>
+          <tr>
+            <td>357</td>
+            <td>2025-12-06 20:33:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9778.67</td>
+            <td>9775.17</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$137.94</td>
+          </tr>
+          <tr>
+            <td>358</td>
+            <td>2025-12-06 20:33:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9778.67</td>
+            <td>9775.17</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$137.19</td>
+          </tr>
+          <tr>
+            <td>359</td>
+            <td>2025-12-06 23:08:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9728.35</td>
+            <td>9740.81</td>
+            <td class="win-text">$2.44</td>
+            <td>$139.64</td>
+          </tr>
+          <tr>
+            <td>360</td>
+            <td>2025-12-06 23:08:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9728.35</td>
+            <td>9740.81</td>
+            <td class="win-text">$2.44</td>
+            <td>$142.08</td>
+          </tr>
+          <tr>
+            <td>361</td>
+            <td>2025-12-08 00:29:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9822.02</td>
+            <td>9818.52</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$141.33</td>
+          </tr>
+          <tr>
+            <td>362</td>
+            <td>2025-12-08 00:29:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9822.02</td>
+            <td>9818.52</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$140.58</td>
+          </tr>
+          <tr>
+            <td>363</td>
+            <td>2025-12-08 07:16:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9708.66</td>
+            <td>9716.16</td>
+            <td class="win-text">$1.45</td>
+            <td>$142.03</td>
+          </tr>
+          <tr>
+            <td>364</td>
+            <td>2025-12-08 07:16:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9708.66</td>
+            <td>9716.16</td>
+            <td class="win-text">$1.45</td>
+            <td>$143.48</td>
+          </tr>
+          <tr>
+            <td>365</td>
+            <td>2025-12-08 22:30:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9708.12</td>
+            <td>9721.78</td>
+            <td class="win-text">$2.68</td>
+            <td>$146.16</td>
+          </tr>
+          <tr>
+            <td>366</td>
+            <td>2025-12-08 22:30:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9708.12</td>
+            <td>9721.78</td>
+            <td class="win-text">$2.68</td>
+            <td>$148.85</td>
+          </tr>
+          <tr>
+            <td>367</td>
+            <td>2025-12-09 02:34:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9708.92</td>
+            <td>9705.42</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$148.10</td>
+          </tr>
+          <tr>
+            <td>368</td>
+            <td>2025-12-09 02:34:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9708.92</td>
+            <td>9705.42</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$147.35</td>
+          </tr>
+          <tr>
+            <td>369</td>
+            <td>2025-12-09 04:41:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9709.58</td>
+            <td>9706.08</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$146.60</td>
+          </tr>
+          <tr>
+            <td>370</td>
+            <td>2025-12-09 04:41:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9709.58</td>
+            <td>9706.08</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$145.85</td>
+          </tr>
+          <tr>
+            <td>371</td>
+            <td>2025-12-09 05:52:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9707.31</td>
+            <td>9703.81</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$145.10</td>
+          </tr>
+          <tr>
+            <td>372</td>
+            <td>2025-12-09 05:52:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9707.31</td>
+            <td>9703.81</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$144.35</td>
+          </tr>
+          <tr>
+            <td>373</td>
+            <td>2025-12-09 21:54:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9499.84</td>
+            <td>9496.34</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$143.60</td>
+          </tr>
+          <tr>
+            <td>374</td>
+            <td>2025-12-09 21:54:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9499.84</td>
+            <td>9496.34</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$142.85</td>
+          </tr>
+          <tr>
+            <td>375</td>
+            <td>2025-12-09 22:54:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9507.61</td>
+            <td>9504.11</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$142.10</td>
+          </tr>
+          <tr>
+            <td>376</td>
+            <td>2025-12-09 22:54:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9507.61</td>
+            <td>9504.11</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$141.35</td>
+          </tr>
+          <tr>
+            <td>377</td>
+            <td>2025-12-10 00:34:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9483.19</td>
+            <td>9504.98</td>
+            <td class="win-text">$4.31</td>
+            <td>$145.65</td>
+          </tr>
+          <tr>
+            <td>378</td>
+            <td>2025-12-10 00:34:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9483.19</td>
+            <td>9504.98</td>
+            <td class="win-text">$4.31</td>
+            <td>$149.96</td>
+          </tr>
+          <tr>
+            <td>379</td>
+            <td>2025-12-10 20:00:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9479.77</td>
+            <td>9476.27</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$149.21</td>
+          </tr>
+          <tr>
+            <td>380</td>
+            <td>2025-12-10 20:00:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9479.77</td>
+            <td>9476.27</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$148.46</td>
+          </tr>
+          <tr>
+            <td>381</td>
+            <td>2025-12-11 00:06:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9482.98</td>
+            <td>9479.48</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$147.71</td>
+          </tr>
+          <tr>
+            <td>382</td>
+            <td>2025-12-11 00:06:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9482.98</td>
+            <td>9479.48</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$146.96</td>
+          </tr>
+          <tr>
+            <td>383</td>
+            <td>2025-12-11 01:13:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9481.44</td>
+            <td>9477.94</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$146.21</td>
+          </tr>
+          <tr>
+            <td>384</td>
+            <td>2025-12-11 01:13:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9481.44</td>
+            <td>9477.94</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$145.46</td>
+          </tr>
+          <tr>
+            <td>385</td>
+            <td>2025-12-11 04:36:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9475.89</td>
+            <td>9481.01</td>
+            <td class="win-text">$0.97</td>
+            <td>$146.44</td>
+          </tr>
+          <tr>
+            <td>386</td>
+            <td>2025-12-11 04:36:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9475.89</td>
+            <td>9481.01</td>
+            <td class="win-text">$0.97</td>
+            <td>$147.41</td>
+          </tr>
+          <tr>
+            <td>387</td>
+            <td>2025-12-11 06:13:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9474.96</td>
+            <td>9471.46</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$146.66</td>
+          </tr>
+          <tr>
+            <td>388</td>
+            <td>2025-12-11 06:13:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9474.96</td>
+            <td>9471.46</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$145.91</td>
+          </tr>
+          <tr>
+            <td>389</td>
+            <td>2025-12-11 08:49:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9403.67</td>
+            <td>9403.73</td>
+            <td class="loss-text">$-0.04</td>
+            <td>$145.87</td>
+          </tr>
+          <tr>
+            <td>390</td>
+            <td>2025-12-11 08:49:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9403.67</td>
+            <td>9403.73</td>
+            <td class="loss-text">$-0.04</td>
+            <td>$145.83</td>
+          </tr>
+          <tr>
+            <td>391</td>
+            <td>2025-12-12 10:35:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9452.97</td>
+            <td>9462.19</td>
+            <td class="win-text">$1.79</td>
+            <td>$147.63</td>
+          </tr>
+          <tr>
+            <td>392</td>
+            <td>2025-12-12 10:35:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9452.97</td>
+            <td>9462.19</td>
+            <td class="win-text">$1.79</td>
+            <td>$149.42</td>
+          </tr>
+          <tr>
+            <td>393</td>
+            <td>2025-12-12 12:22:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9459.56</td>
+            <td>9456.06</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$148.67</td>
+          </tr>
+          <tr>
+            <td>394</td>
+            <td>2025-12-12 12:22:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9459.56</td>
+            <td>9456.06</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$147.92</td>
+          </tr>
+          <tr>
+            <td>395</td>
+            <td>2025-12-12 13:35:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9449.98</td>
+            <td>9446.48</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$147.17</td>
+          </tr>
+          <tr>
+            <td>396</td>
+            <td>2025-12-12 13:35:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9449.98</td>
+            <td>9446.48</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$146.42</td>
+          </tr>
+          <tr>
+            <td>397</td>
+            <td>2025-12-13 05:56:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9442.78</td>
+            <td>9439.28</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$145.67</td>
+          </tr>
+          <tr>
+            <td>398</td>
+            <td>2025-12-13 05:56:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9442.78</td>
+            <td>9439.28</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$144.92</td>
+          </tr>
+          <tr>
+            <td>399</td>
+            <td>2025-12-14 09:47:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9505.46</td>
+            <td>9511.91</td>
+            <td class="win-text">$1.24</td>
+            <td>$146.16</td>
+          </tr>
+          <tr>
+            <td>400</td>
+            <td>2025-12-14 09:47:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9505.46</td>
+            <td>9511.91</td>
+            <td class="win-text">$1.24</td>
+            <td>$147.40</td>
+          </tr>
+          <tr>
+            <td>401</td>
+            <td>2025-12-14 21:49:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9676.28</td>
+            <td>9672.78</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$146.65</td>
+          </tr>
+          <tr>
+            <td>402</td>
+            <td>2025-12-14 21:49:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9676.28</td>
+            <td>9672.78</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$145.90</td>
+          </tr>
+          <tr>
+            <td>403</td>
+            <td>2025-12-14 22:52:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9680.28</td>
+            <td>9683.90</td>
+            <td class="win-text">$0.67</td>
+            <td>$146.57</td>
+          </tr>
+          <tr>
+            <td>404</td>
+            <td>2025-12-14 22:52:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9680.28</td>
+            <td>9683.90</td>
+            <td class="win-text">$0.67</td>
+            <td>$147.25</td>
+          </tr>
+          <tr>
+            <td>405</td>
+            <td>2025-12-15 01:00:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9677.90</td>
+            <td>9689.58</td>
+            <td class="win-text">$2.29</td>
+            <td>$149.53</td>
+          </tr>
+          <tr>
+            <td>406</td>
+            <td>2025-12-15 01:00:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9677.90</td>
+            <td>9689.58</td>
+            <td class="win-text">$2.29</td>
+            <td>$151.82</td>
+          </tr>
+          <tr>
+            <td>407</td>
+            <td>2025-12-15 05:17:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9643.85</td>
+            <td>9658.04</td>
+            <td class="win-text">$2.79</td>
+            <td>$154.61</td>
+          </tr>
+          <tr>
+            <td>408</td>
+            <td>2025-12-15 05:17:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9643.85</td>
+            <td>9658.04</td>
+            <td class="win-text">$2.79</td>
+            <td>$157.40</td>
+          </tr>
+          <tr>
+            <td>409</td>
+            <td>2025-12-15 10:46:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9676.11</td>
+            <td>9672.61</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$156.65</td>
+          </tr>
+          <tr>
+            <td>410</td>
+            <td>2025-12-15 10:46:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9676.11</td>
+            <td>9672.61</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$155.90</td>
+          </tr>
+          <tr>
+            <td>411</td>
+            <td>2025-12-15 17:01:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9686.27</td>
+            <td>9688.30</td>
+            <td class="win-text">$0.36</td>
+            <td>$156.25</td>
+          </tr>
+          <tr>
+            <td>412</td>
+            <td>2025-12-15 17:01:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9686.27</td>
+            <td>9688.30</td>
+            <td class="win-text">$0.36</td>
+            <td>$156.61</td>
+          </tr>
+          <tr>
+            <td>413</td>
+            <td>2025-12-16 02:55:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9711.29</td>
+            <td>9716.66</td>
+            <td class="win-text">$1.02</td>
+            <td>$157.63</td>
+          </tr>
+          <tr>
+            <td>414</td>
+            <td>2025-12-16 02:55:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9711.29</td>
+            <td>9716.66</td>
+            <td class="win-text">$1.02</td>
+            <td>$158.66</td>
+          </tr>
+          <tr>
+            <td>415</td>
+            <td>2025-12-18 10:20:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>10033.79</td>
+            <td>10041.83</td>
+            <td class="win-text">$1.56</td>
+            <td>$160.22</td>
+          </tr>
+          <tr>
+            <td>416</td>
+            <td>2025-12-18 10:20:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>10033.79</td>
+            <td>10041.83</td>
+            <td class="win-text">$1.56</td>
+            <td>$161.77</td>
+          </tr>
+          <tr>
+            <td>417</td>
+            <td>2025-12-19 08:44:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>10083.76</td>
+            <td>10080.26</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$161.02</td>
+          </tr>
+          <tr>
+            <td>418</td>
+            <td>2025-12-19 08:44:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>10083.76</td>
+            <td>10080.26</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$160.27</td>
+          </tr>
+          <tr>
+            <td>419</td>
+            <td>2025-12-19 21:10:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>10003.72</td>
+            <td>10005.41</td>
+            <td class="win-text">$0.29</td>
+            <td>$160.56</td>
+          </tr>
+          <tr>
+            <td>420</td>
+            <td>2025-12-19 21:10:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>10003.72</td>
+            <td>10005.41</td>
+            <td class="win-text">$0.29</td>
+            <td>$160.85</td>
+          </tr>
+          <tr>
+            <td>421</td>
+            <td>2025-12-19 22:26:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>10012.07</td>
+            <td>10008.57</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$160.10</td>
+          </tr>
+          <tr>
+            <td>422</td>
+            <td>2025-12-19 22:26:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>10012.07</td>
+            <td>10008.57</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$159.35</td>
+          </tr>
+          <tr>
+            <td>423</td>
+            <td>2025-12-20 00:17:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9999.53</td>
+            <td>9996.03</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$158.60</td>
+          </tr>
+          <tr>
+            <td>424</td>
+            <td>2025-12-20 00:17:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9999.53</td>
+            <td>9996.03</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$157.85</td>
+          </tr>
+          <tr>
+            <td>425</td>
+            <td>2025-12-20 19:50:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9928.79</td>
+            <td>9947.20</td>
+            <td class="win-text">$3.63</td>
+            <td>$161.48</td>
+          </tr>
+          <tr>
+            <td>426</td>
+            <td>2025-12-20 19:50:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9928.79</td>
+            <td>9947.20</td>
+            <td class="win-text">$3.63</td>
+            <td>$165.11</td>
+          </tr>
+          <tr>
+            <td>427</td>
+            <td>2025-12-21 04:11:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9924.24</td>
+            <td>9920.74</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$164.36</td>
+          </tr>
+          <tr>
+            <td>428</td>
+            <td>2025-12-21 04:11:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9924.24</td>
+            <td>9920.74</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$163.61</td>
+          </tr>
+          <tr>
+            <td>429</td>
+            <td>2025-12-21 05:46:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9924.03</td>
+            <td>9932.26</td>
+            <td class="win-text">$1.60</td>
+            <td>$165.21</td>
+          </tr>
+          <tr>
+            <td>430</td>
+            <td>2025-12-21 05:46:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9924.03</td>
+            <td>9932.26</td>
+            <td class="win-text">$1.60</td>
+            <td>$166.81</td>
+          </tr>
+          <tr>
+            <td>431</td>
+            <td>2025-12-21 10:43:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9845.04</td>
+            <td>9874.61</td>
+            <td class="win-text">$5.86</td>
+            <td>$172.67</td>
+          </tr>
+          <tr>
+            <td>432</td>
+            <td>2025-12-21 10:43:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9845.04</td>
+            <td>9874.61</td>
+            <td class="win-text">$5.86</td>
+            <td>$178.53</td>
+          </tr>
+          <tr>
+            <td>433</td>
+            <td>2025-12-22 14:10:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9846.11</td>
+            <td>9854.11</td>
+            <td class="win-text">$1.55</td>
+            <td>$180.08</td>
+          </tr>
+          <tr>
+            <td>434</td>
+            <td>2025-12-22 14:10:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9846.11</td>
+            <td>9854.11</td>
+            <td class="win-text">$1.55</td>
+            <td>$181.63</td>
+          </tr>
+          <tr>
+            <td>435</td>
+            <td>2025-12-22 15:51:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9848.88</td>
+            <td>9845.38</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$180.88</td>
+          </tr>
+          <tr>
+            <td>436</td>
+            <td>2025-12-22 15:51:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9848.88</td>
+            <td>9845.38</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$180.13</td>
+          </tr>
+          <tr>
+            <td>437</td>
+            <td>2025-12-24 07:32:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9923.78</td>
+            <td>9937.21</td>
+            <td class="win-text">$2.64</td>
+            <td>$182.77</td>
+          </tr>
+          <tr>
+            <td>438</td>
+            <td>2025-12-24 07:32:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9923.78</td>
+            <td>9937.21</td>
+            <td class="win-text">$2.64</td>
+            <td>$185.40</td>
+          </tr>
+          <tr>
+            <td>439</td>
+            <td>2025-12-25 00:43:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9901.77</td>
+            <td>9898.27</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$184.65</td>
+          </tr>
+          <tr>
+            <td>440</td>
+            <td>2025-12-25 00:43:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9901.77</td>
+            <td>9898.27</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$183.90</td>
+          </tr>
+          <tr>
+            <td>441</td>
+            <td>2025-12-25 04:11:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9830.73</td>
+            <td>9836.38</td>
+            <td class="win-text">$1.08</td>
+            <td>$184.98</td>
+          </tr>
+          <tr>
+            <td>442</td>
+            <td>2025-12-25 04:11:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9830.73</td>
+            <td>9836.38</td>
+            <td class="win-text">$1.08</td>
+            <td>$186.06</td>
+          </tr>
+          <tr>
+            <td>443</td>
+            <td>2025-12-25 09:18:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9901.90</td>
+            <td>9935.26</td>
+            <td class="win-text">$6.62</td>
+            <td>$192.69</td>
+          </tr>
+          <tr>
+            <td>444</td>
+            <td>2025-12-25 09:18:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9901.90</td>
+            <td>9935.26</td>
+            <td class="win-text">$6.62</td>
+            <td>$199.31</td>
+          </tr>
+          <tr>
+            <td>445</td>
+            <td>2025-12-25 15:33:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9914.20</td>
+            <td>9910.70</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$198.56</td>
+          </tr>
+          <tr>
+            <td>446</td>
+            <td>2025-12-25 15:33:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9914.20</td>
+            <td>9910.70</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$197.81</td>
+          </tr>
+          <tr>
+            <td>447</td>
+            <td>2025-12-26 03:33:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9931.78</td>
+            <td>9942.74</td>
+            <td class="win-text">$2.14</td>
+            <td>$199.95</td>
+          </tr>
+          <tr>
+            <td>448</td>
+            <td>2025-12-26 03:33:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9931.78</td>
+            <td>9942.74</td>
+            <td class="win-text">$2.14</td>
+            <td>$202.10</td>
+          </tr>
+          <tr>
+            <td>449</td>
+            <td>2025-12-26 15:20:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9935.17</td>
+            <td>9940.13</td>
+            <td class="win-text">$0.94</td>
+            <td>$203.04</td>
+          </tr>
+          <tr>
+            <td>450</td>
+            <td>2025-12-26 15:20:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9935.17</td>
+            <td>9940.13</td>
+            <td class="win-text">$0.94</td>
+            <td>$203.98</td>
+          </tr>
+          <tr>
+            <td>451</td>
+            <td>2025-12-26 18:53:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9927.64</td>
+            <td>9924.14</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$203.23</td>
+          </tr>
+          <tr>
+            <td>452</td>
+            <td>2025-12-26 18:53:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9927.64</td>
+            <td>9924.14</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$202.48</td>
+          </tr>
+          <tr>
+            <td>453</td>
+            <td>2025-12-26 20:21:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9890.96</td>
+            <td>9925.77</td>
+            <td class="win-text">$6.91</td>
+            <td>$209.39</td>
+          </tr>
+          <tr>
+            <td>454</td>
+            <td>2025-12-26 20:21:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9890.96</td>
+            <td>9925.77</td>
+            <td class="win-text">$6.91</td>
+            <td>$216.31</td>
+          </tr>
+          <tr>
+            <td>455</td>
+            <td>2025-12-26 21:56:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9922.57</td>
+            <td>9939.02</td>
+            <td class="win-text">$3.24</td>
+            <td>$219.55</td>
+          </tr>
+          <tr>
+            <td>456</td>
+            <td>2025-12-26 21:56:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9922.57</td>
+            <td>9939.02</td>
+            <td class="win-text">$3.24</td>
+            <td>$222.79</td>
+          </tr>
+          <tr>
+            <td>457</td>
+            <td>2025-12-27 15:19:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9921.07</td>
+            <td>9939.98</td>
+            <td class="win-text">$3.73</td>
+            <td>$226.52</td>
+          </tr>
+          <tr>
+            <td>458</td>
+            <td>2025-12-27 15:19:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9921.07</td>
+            <td>9939.98</td>
+            <td class="win-text">$3.73</td>
+            <td>$230.25</td>
+          </tr>
+          <tr>
+            <td>459</td>
+            <td>2025-12-27 19:15:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9929.21</td>
+            <td>9925.71</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$229.50</td>
+          </tr>
+          <tr>
+            <td>460</td>
+            <td>2025-12-27 19:15:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9929.21</td>
+            <td>9925.71</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$228.75</td>
+          </tr>
+          <tr>
+            <td>461</td>
+            <td>2025-12-27 20:26:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9920.77</td>
+            <td>9924.41</td>
+            <td class="win-text">$0.68</td>
+            <td>$229.43</td>
+          </tr>
+          <tr>
+            <td>462</td>
+            <td>2025-12-27 20:26:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9920.77</td>
+            <td>9924.41</td>
+            <td class="win-text">$0.68</td>
+            <td>$230.11</td>
+          </tr>
+          <tr>
+            <td>463</td>
+            <td>2025-12-27 21:29:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9924.41</td>
+            <td>9920.91</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$229.36</td>
+          </tr>
+          <tr>
+            <td>464</td>
+            <td>2025-12-27 21:29:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9924.41</td>
+            <td>9920.91</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$228.61</td>
+          </tr>
+          <tr>
+            <td>465</td>
+            <td>2025-12-27 22:37:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9917.84</td>
+            <td>9914.34</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$227.86</td>
+          </tr>
+          <tr>
+            <td>466</td>
+            <td>2025-12-27 22:37:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9917.84</td>
+            <td>9914.34</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$227.11</td>
+          </tr>
+          <tr>
+            <td>467</td>
+            <td>2025-12-29 05:43:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>10013.02</td>
+            <td>10009.52</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$226.36</td>
+          </tr>
+          <tr>
+            <td>468</td>
+            <td>2025-12-29 05:43:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>10013.02</td>
+            <td>10009.52</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$225.61</td>
+          </tr>
+          <tr>
+            <td>469</td>
+            <td>2025-12-29 23:25:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>10008.53</td>
+            <td>10021.68</td>
+            <td class="win-text">$2.58</td>
+            <td>$228.19</td>
+          </tr>
+          <tr>
+            <td>470</td>
+            <td>2025-12-29 23:25:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>10008.53</td>
+            <td>10021.68</td>
+            <td class="win-text">$2.58</td>
+            <td>$230.77</td>
+          </tr>
+          <tr>
+            <td>471</td>
+            <td>2025-12-31 19:24:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9945.46</td>
+            <td>9945.50</td>
+            <td class="loss-text">$-0.04</td>
+            <td>$230.73</td>
+          </tr>
+          <tr>
+            <td>472</td>
+            <td>2025-12-31 19:24:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9945.46</td>
+            <td>9945.50</td>
+            <td class="loss-text">$-0.04</td>
+            <td>$230.69</td>
+          </tr>
+          <tr>
+            <td>473</td>
+            <td>2025-12-31 21:06:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9936.38</td>
+            <td>9941.56</td>
+            <td class="win-text">$0.99</td>
+            <td>$231.67</td>
+          </tr>
+          <tr>
+            <td>474</td>
+            <td>2025-12-31 21:06:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9936.38</td>
+            <td>9941.56</td>
+            <td class="win-text">$0.99</td>
+            <td>$232.66</td>
+          </tr>
+          <tr>
+            <td>475</td>
+            <td>2026-01-02 13:45:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9801.24</td>
+            <td>9801.33</td>
+            <td class="loss-text">$-0.03</td>
+            <td>$232.63</td>
+          </tr>
+          <tr>
+            <td>476</td>
+            <td>2026-01-02 13:45:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9801.24</td>
+            <td>9801.33</td>
+            <td class="loss-text">$-0.03</td>
+            <td>$232.59</td>
+          </tr>
+          <tr>
+            <td>477</td>
+            <td>2026-01-03 20:59:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9987.28</td>
+            <td>9983.78</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$231.84</td>
+          </tr>
+          <tr>
+            <td>478</td>
+            <td>2026-01-03 20:59:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9987.28</td>
+            <td>9983.78</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$231.09</td>
+          </tr>
+          <tr>
+            <td>479</td>
+            <td>2026-01-03 21:59:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9983.27</td>
+            <td>9979.77</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$230.34</td>
+          </tr>
+          <tr>
+            <td>480</td>
+            <td>2026-01-03 21:59:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9983.27</td>
+            <td>9979.77</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$229.59</td>
+          </tr>
+          <tr>
+            <td>481</td>
+            <td>2026-01-04 00:54:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9975.86</td>
+            <td>9972.36</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$228.84</td>
+          </tr>
+          <tr>
+            <td>482</td>
+            <td>2026-01-04 00:54:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9975.86</td>
+            <td>9972.36</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$228.09</td>
+          </tr>
+          <tr>
+            <td>483</td>
+            <td>2026-01-04 04:49:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9984.98</td>
+            <td>9981.48</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$227.34</td>
+          </tr>
+          <tr>
+            <td>484</td>
+            <td>2026-01-04 04:49:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9984.98</td>
+            <td>9981.48</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$226.59</td>
+          </tr>
+          <tr>
+            <td>485</td>
+            <td>2026-01-04 08:55:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9986.97</td>
+            <td>9983.47</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$225.84</td>
+          </tr>
+          <tr>
+            <td>486</td>
+            <td>2026-01-04 08:55:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9986.97</td>
+            <td>9983.47</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$225.09</td>
+          </tr>
+          <tr>
+            <td>487</td>
+            <td>2026-01-04 19:01:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9977.88</td>
+            <td>9974.38</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$224.34</td>
+          </tr>
+          <tr>
+            <td>488</td>
+            <td>2026-01-04 19:01:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9977.88</td>
+            <td>9974.38</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$223.59</td>
+          </tr>
+          <tr>
+            <td>489</td>
+            <td>2026-01-04 22:02:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9985.53</td>
+            <td>9987.68</td>
+            <td class="win-text">$0.38</td>
+            <td>$223.97</td>
+          </tr>
+          <tr>
+            <td>490</td>
+            <td>2026-01-04 22:02:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9985.53</td>
+            <td>9987.68</td>
+            <td class="win-text">$0.38</td>
+            <td>$224.35</td>
+          </tr>
+          <tr>
+            <td>491</td>
+            <td>2026-01-05 04:04:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9982.66</td>
+            <td>9979.16</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$223.60</td>
+          </tr>
+          <tr>
+            <td>492</td>
+            <td>2026-01-05 04:04:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9982.66</td>
+            <td>9979.16</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$222.85</td>
+          </tr>
+          <tr>
+            <td>493</td>
+            <td>2026-01-06 01:47:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9807.39</td>
+            <td>9810.74</td>
+            <td class="win-text">$0.62</td>
+            <td>$223.47</td>
+          </tr>
+          <tr>
+            <td>494</td>
+            <td>2026-01-06 01:47:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9807.39</td>
+            <td>9810.74</td>
+            <td class="win-text">$0.62</td>
+            <td>$224.09</td>
+          </tr>
+          <tr>
+            <td>495</td>
+            <td>2026-01-06 03:21:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9803.76</td>
+            <td>9800.26</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$223.34</td>
+          </tr>
+          <tr>
+            <td>496</td>
+            <td>2026-01-06 03:21:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9803.76</td>
+            <td>9800.26</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$222.59</td>
+          </tr>
+          <tr>
+            <td>497</td>
+            <td>2026-01-06 11:15:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9766.77</td>
+            <td>9781.99</td>
+            <td class="win-text">$2.99</td>
+            <td>$225.59</td>
+          </tr>
+          <tr>
+            <td>498</td>
+            <td>2026-01-06 11:15:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9766.77</td>
+            <td>9781.99</td>
+            <td class="win-text">$2.99</td>
+            <td>$228.58</td>
+          </tr>
+          <tr>
+            <td>499</td>
+            <td>2026-01-08 11:29:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9816.59</td>
+            <td>9831.31</td>
+            <td class="win-text">$2.89</td>
+            <td>$231.47</td>
+          </tr>
+          <tr>
+            <td>500</td>
+            <td>2026-01-08 11:29:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9816.59</td>
+            <td>9831.31</td>
+            <td class="win-text">$2.89</td>
+            <td>$234.37</td>
+          </tr>
+          <tr>
+            <td>501</td>
+            <td>2026-01-09 08:51:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9880.31</td>
+            <td>9876.81</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$233.62</td>
+          </tr>
+          <tr>
+            <td>502</td>
+            <td>2026-01-09 08:51:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9880.31</td>
+            <td>9876.81</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$232.87</td>
+          </tr>
+          <tr>
+            <td>503</td>
+            <td>2026-01-09 10:08:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9882.96</td>
+            <td>9879.46</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$232.12</td>
+          </tr>
+          <tr>
+            <td>504</td>
+            <td>2026-01-09 10:08:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9882.96</td>
+            <td>9879.46</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$231.37</td>
+          </tr>
+          <tr>
+            <td>505</td>
+            <td>2026-01-10 07:45:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9715.52</td>
+            <td>9720.03</td>
+            <td class="win-text">$0.85</td>
+            <td>$232.22</td>
+          </tr>
+          <tr>
+            <td>506</td>
+            <td>2026-01-10 07:45:00</td>
+            <td>BUY</td>
+            <td>Scalp</td>
+            <td>9715.52</td>
+            <td>9720.03</td>
+            <td class="win-text">$0.85</td>
+            <td>$233.07</td>
+          </tr>
+          <tr>
+            <td>507</td>
+            <td>2026-01-10 08:52:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9690.50</td>
+            <td>9687.00</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$232.32</td>
+          </tr>
+          <tr>
+            <td>508</td>
+            <td>2026-01-10 08:52:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9690.50</td>
+            <td>9687.00</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$231.57</td>
+          </tr>
+          <tr>
+            <td>509</td>
+            <td>2026-01-10 20:15:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9689.09</td>
+            <td>9685.59</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$230.82</td>
+          </tr>
+          <tr>
+            <td>510</td>
+            <td>2026-01-10 20:15:00</td>
+            <td>BUY</td>
+            <td>SL Hit</td>
+            <td>9689.09</td>
+            <td>9685.59</td>
+            <td class="loss-text">$-0.75</td>
+            <td>$230.07</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+      const ctx = document.getElementById("equityChart").getContext("2d");
+      const equityChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: [
+            "2025-09-14 01:02",
+            "2025-09-14 01:07",
+            "2025-09-14 01:07",
+            "2025-09-14 07:37",
+            "2025-09-14 07:37",
+            "2025-09-14 08:47",
+            "2025-09-14 08:47",
+            "2025-09-16 01:45",
+            "2025-09-16 01:45",
+            "2025-09-18 17:15",
+            "2025-09-18 17:15",
+            "2025-09-18 23:03",
+            "2025-09-18 23:03",
+            "2025-09-19 21:43",
+            "2025-09-19 21:43",
+            "2025-09-20 07:32",
+            "2025-09-20 07:32",
+            "2025-09-20 12:53",
+            "2025-09-20 12:53",
+            "2025-09-21 05:32",
+            "2025-09-21 05:32",
+            "2025-09-21 08:48",
+            "2025-09-21 08:48",
+            "2025-09-22 17:01",
+            "2025-09-22 17:01",
+            "2025-09-22 19:01",
+            "2025-09-22 19:01",
+            "2025-09-23 00:18",
+            "2025-09-23 00:18",
+            "2025-09-23 01:21",
+            "2025-09-23 01:21",
+            "2025-09-24 08:45",
+            "2025-09-24 08:45",
+            "2025-09-25 03:39",
+            "2025-09-25 03:39",
+            "2025-09-26 05:42",
+            "2025-09-26 05:42",
+            "2025-09-27 01:28",
+            "2025-09-27 01:28",
+            "2025-09-27 20:17",
+            "2025-09-27 20:17",
+            "2025-09-28 07:11",
+            "2025-09-28 07:11",
+            "2025-09-29 04:40",
+            "2025-09-29 04:40",
+            "2025-09-29 05:55",
+            "2025-09-29 05:55",
+            "2025-09-29 07:11",
+            "2025-09-29 07:11",
+            "2025-09-29 16:45",
+            "2025-09-29 16:45",
+            "2025-09-30 01:14",
+            "2025-09-30 01:14",
+            "2025-09-30 02:31",
+            "2025-09-30 02:31",
+            "2025-10-01 16:45",
+            "2025-10-01 16:45",
+            "2025-10-01 23:10",
+            "2025-10-01 23:10",
+            "2025-10-02 06:39",
+            "2025-10-02 06:39",
+            "2025-10-02 07:36",
+            "2025-10-02 07:36",
+            "2025-10-02 09:17",
+            "2025-10-02 09:17",
+            "2025-10-02 10:58",
+            "2025-10-02 10:58",
+            "2025-10-02 13:08",
+            "2025-10-02 13:08",
+            "2025-10-02 14:19",
+            "2025-10-02 14:19",
+            "2025-10-02 23:44",
+            "2025-10-02 23:44",
+            "2025-10-03 17:54",
+            "2025-10-03 17:54",
+            "2025-10-04 00:37",
+            "2025-10-04 00:37",
+            "2025-10-04 02:01",
+            "2025-10-04 02:01",
+            "2025-10-04 06:45",
+            "2025-10-04 06:45",
+            "2025-10-05 03:18",
+            "2025-10-05 03:18",
+            "2025-10-06 08:06",
+            "2025-10-06 08:06",
+            "2025-10-08 01:19",
+            "2025-10-08 01:19",
+            "2025-10-11 02:40",
+            "2025-10-11 02:40",
+            "2025-10-11 10:19",
+            "2025-10-11 10:19",
+            "2025-10-11 13:51",
+            "2025-10-11 13:51",
+            "2025-10-11 16:56",
+            "2025-10-11 16:56",
+            "2025-10-12 04:59",
+            "2025-10-12 04:59",
+            "2025-10-12 17:54",
+            "2025-10-12 17:54",
+            "2025-10-12 19:08",
+            "2025-10-12 19:08",
+            "2025-10-12 20:30",
+            "2025-10-12 20:30",
+            "2025-10-13 04:16",
+            "2025-10-13 04:16",
+            "2025-10-13 08:26",
+            "2025-10-13 08:26",
+            "2025-10-13 10:40",
+            "2025-10-13 10:40",
+            "2025-10-13 12:40",
+            "2025-10-13 12:40",
+            "2025-10-13 17:44",
+            "2025-10-13 17:44",
+            "2025-10-14 22:31",
+            "2025-10-14 22:31",
+            "2025-10-14 23:34",
+            "2025-10-14 23:34",
+            "2025-10-15 04:45",
+            "2025-10-15 04:45",
+            "2025-10-15 22:47",
+            "2025-10-15 22:47",
+            "2025-10-16 00:04",
+            "2025-10-16 00:04",
+            "2025-10-16 02:14",
+            "2025-10-16 02:14",
+            "2025-10-16 06:58",
+            "2025-10-16 06:58",
+            "2025-10-16 14:25",
+            "2025-10-16 14:25",
+            "2025-10-16 16:18",
+            "2025-10-16 16:18",
+            "2025-10-17 19:45",
+            "2025-10-17 19:45",
+            "2025-10-18 12:04",
+            "2025-10-18 12:04",
+            "2025-10-18 14:38",
+            "2025-10-18 14:38",
+            "2025-10-18 15:45",
+            "2025-10-18 15:45",
+            "2025-10-19 21:12",
+            "2025-10-19 21:12",
+            "2025-10-19 22:34",
+            "2025-10-19 22:34",
+            "2025-10-20 02:47",
+            "2025-10-20 02:47",
+            "2025-10-20 10:15",
+            "2025-10-20 10:15",
+            "2025-10-20 16:18",
+            "2025-10-20 16:18",
+            "2025-10-20 23:03",
+            "2025-10-20 23:03",
+            "2025-10-22 09:25",
+            "2025-10-22 09:25",
+            "2025-10-22 10:42",
+            "2025-10-22 10:42",
+            "2025-10-22 12:07",
+            "2025-10-22 12:07",
+            "2025-10-22 13:24",
+            "2025-10-22 13:24",
+            "2025-10-22 15:11",
+            "2025-10-22 15:11",
+            "2025-10-23 01:42",
+            "2025-10-23 01:42",
+            "2025-10-23 06:43",
+            "2025-10-23 06:43",
+            "2025-10-23 08:08",
+            "2025-10-23 08:08",
+            "2025-10-23 10:05",
+            "2025-10-23 10:05",
+            "2025-10-23 21:45",
+            "2025-10-23 21:45",
+            "2025-10-24 01:31",
+            "2025-10-24 01:31",
+            "2025-10-24 02:28",
+            "2025-10-24 02:28",
+            "2025-10-24 04:42",
+            "2025-10-24 04:42",
+            "2025-10-24 06:31",
+            "2025-10-24 06:31",
+            "2025-10-24 07:31",
+            "2025-10-24 07:31",
+            "2025-10-24 08:44",
+            "2025-10-24 08:44",
+            "2025-10-24 10:21",
+            "2025-10-24 10:21",
+            "2025-10-24 12:08",
+            "2025-10-24 12:08",
+            "2025-10-24 21:46",
+            "2025-10-24 21:46",
+            "2025-10-25 07:26",
+            "2025-10-25 07:26",
+            "2025-10-27 09:04",
+            "2025-10-27 09:04",
+            "2025-10-27 14:48",
+            "2025-10-27 14:48",
+            "2025-10-27 16:02",
+            "2025-10-27 16:02",
+            "2025-10-27 18:46",
+            "2025-10-27 18:46",
+            "2025-10-27 19:46",
+            "2025-10-27 19:46",
+            "2025-10-27 21:15",
+            "2025-10-27 21:15",
+            "2025-10-28 04:28",
+            "2025-10-28 04:28",
+            "2025-10-28 20:56",
+            "2025-10-28 20:56",
+            "2025-10-29 08:30",
+            "2025-10-29 08:30",
+            "2025-10-30 08:16",
+            "2025-10-30 08:16",
+            "2025-10-31 11:14",
+            "2025-10-31 11:14",
+            "2025-10-31 12:50",
+            "2025-10-31 12:50",
+            "2025-10-31 17:14",
+            "2025-10-31 17:14",
+            "2025-11-01 23:52",
+            "2025-11-01 23:52",
+            "2025-11-02 03:04",
+            "2025-11-02 03:04",
+            "2025-11-02 05:32",
+            "2025-11-02 05:32",
+            "2025-11-02 07:31",
+            "2025-11-02 07:31",
+            "2025-11-02 08:39",
+            "2025-11-02 08:39",
+            "2025-11-05 14:38",
+            "2025-11-05 14:38",
+            "2025-11-05 18:44",
+            "2025-11-05 18:44",
+            "2025-11-06 17:43",
+            "2025-11-06 17:43",
+            "2025-11-09 18:08",
+            "2025-11-09 18:08",
+            "2025-11-10 02:05",
+            "2025-11-10 02:05",
+            "2025-11-10 04:28",
+            "2025-11-10 04:28",
+            "2025-11-10 17:06",
+            "2025-11-10 17:06",
+            "2025-11-10 23:53",
+            "2025-11-10 23:53",
+            "2025-11-11 11:05",
+            "2025-11-11 11:05",
+            "2025-11-11 22:28",
+            "2025-11-11 22:28",
+            "2025-11-12 14:55",
+            "2025-11-12 14:55",
+            "2025-11-12 18:09",
+            "2025-11-12 18:09",
+            "2025-11-12 20:36",
+            "2025-11-12 20:36",
+            "2025-11-12 22:03",
+            "2025-11-12 22:03",
+            "2025-11-12 23:03",
+            "2025-11-12 23:03",
+            "2025-11-13 19:37",
+            "2025-11-13 19:37",
+            "2025-11-14 12:27",
+            "2025-11-14 12:27",
+            "2025-11-14 19:38",
+            "2025-11-14 19:38",
+            "2025-11-16 10:31",
+            "2025-11-16 10:31",
+            "2025-11-16 19:54",
+            "2025-11-16 19:54",
+            "2025-11-16 20:58",
+            "2025-11-16 20:58",
+            "2025-11-16 22:33",
+            "2025-11-16 22:33",
+            "2025-11-18 13:55",
+            "2025-11-18 13:55",
+            "2025-11-21 05:28",
+            "2025-11-21 05:28",
+            "2025-11-22 01:05",
+            "2025-11-22 01:05",
+            "2025-11-22 06:40",
+            "2025-11-22 06:40",
+            "2025-11-22 22:25",
+            "2025-11-22 22:25",
+            "2025-11-23 19:22",
+            "2025-11-23 19:22",
+            "2025-11-25 03:50",
+            "2025-11-25 03:50",
+            "2025-11-25 23:51",
+            "2025-11-25 23:51",
+            "2025-11-26 09:41",
+            "2025-11-26 09:41",
+            "2025-11-26 10:45",
+            "2025-11-26 10:45",
+            "2025-11-26 13:35",
+            "2025-11-26 13:35",
+            "2025-11-26 14:38",
+            "2025-11-26 14:38",
+            "2025-11-28 17:20",
+            "2025-11-28 17:20",
+            "2025-11-29 05:37",
+            "2025-11-29 05:37",
+            "2025-11-29 06:42",
+            "2025-11-29 06:42",
+            "2025-11-29 08:23",
+            "2025-11-29 08:23",
+            "2025-11-29 09:32",
+            "2025-11-29 09:32",
+            "2025-11-29 10:52",
+            "2025-11-29 10:52",
+            "2025-11-29 23:55",
+            "2025-11-29 23:55",
+            "2025-11-30 03:34",
+            "2025-11-30 03:34",
+            "2025-11-30 04:46",
+            "2025-11-30 04:46",
+            "2025-11-30 07:36",
+            "2025-11-30 07:36",
+            "2025-12-01 04:17",
+            "2025-12-01 04:17",
+            "2025-12-01 13:42",
+            "2025-12-01 13:42",
+            "2025-12-02 07:19",
+            "2025-12-02 07:19",
+            "2025-12-02 16:24",
+            "2025-12-02 16:24",
+            "2025-12-03 01:13",
+            "2025-12-03 01:13",
+            "2025-12-03 11:32",
+            "2025-12-03 11:32",
+            "2025-12-03 15:36",
+            "2025-12-03 15:36",
+            "2025-12-03 18:06",
+            "2025-12-03 18:06",
+            "2025-12-03 19:09",
+            "2025-12-03 19:09",
+            "2025-12-03 20:57",
+            "2025-12-03 20:57",
+            "2025-12-03 22:23",
+            "2025-12-03 22:23",
+            "2025-12-04 00:22",
+            "2025-12-04 00:22",
+            "2025-12-04 01:24",
+            "2025-12-04 01:24",
+            "2025-12-04 06:05",
+            "2025-12-04 06:05",
+            "2025-12-04 07:11",
+            "2025-12-04 07:11",
+            "2025-12-04 19:33",
+            "2025-12-04 19:33",
+            "2025-12-04 20:39",
+            "2025-12-04 20:39",
+            "2025-12-04 22:29",
+            "2025-12-04 22:29",
+            "2025-12-05 18:43",
+            "2025-12-05 18:43",
+            "2025-12-06 10:17",
+            "2025-12-06 10:17",
+            "2025-12-06 17:17",
+            "2025-12-06 17:17",
+            "2025-12-06 20:33",
+            "2025-12-06 20:33",
+            "2025-12-06 23:08",
+            "2025-12-06 23:08",
+            "2025-12-08 00:29",
+            "2025-12-08 00:29",
+            "2025-12-08 07:16",
+            "2025-12-08 07:16",
+            "2025-12-08 22:30",
+            "2025-12-08 22:30",
+            "2025-12-09 02:34",
+            "2025-12-09 02:34",
+            "2025-12-09 04:41",
+            "2025-12-09 04:41",
+            "2025-12-09 05:52",
+            "2025-12-09 05:52",
+            "2025-12-09 21:54",
+            "2025-12-09 21:54",
+            "2025-12-09 22:54",
+            "2025-12-09 22:54",
+            "2025-12-10 00:34",
+            "2025-12-10 00:34",
+            "2025-12-10 20:00",
+            "2025-12-10 20:00",
+            "2025-12-11 00:06",
+            "2025-12-11 00:06",
+            "2025-12-11 01:13",
+            "2025-12-11 01:13",
+            "2025-12-11 04:36",
+            "2025-12-11 04:36",
+            "2025-12-11 06:13",
+            "2025-12-11 06:13",
+            "2025-12-11 08:49",
+            "2025-12-11 08:49",
+            "2025-12-12 10:35",
+            "2025-12-12 10:35",
+            "2025-12-12 12:22",
+            "2025-12-12 12:22",
+            "2025-12-12 13:35",
+            "2025-12-12 13:35",
+            "2025-12-13 05:56",
+            "2025-12-13 05:56",
+            "2025-12-14 09:47",
+            "2025-12-14 09:47",
+            "2025-12-14 21:49",
+            "2025-12-14 21:49",
+            "2025-12-14 22:52",
+            "2025-12-14 22:52",
+            "2025-12-15 01:00",
+            "2025-12-15 01:00",
+            "2025-12-15 05:17",
+            "2025-12-15 05:17",
+            "2025-12-15 10:46",
+            "2025-12-15 10:46",
+            "2025-12-15 17:01",
+            "2025-12-15 17:01",
+            "2025-12-16 02:55",
+            "2025-12-16 02:55",
+            "2025-12-18 10:20",
+            "2025-12-18 10:20",
+            "2025-12-19 08:44",
+            "2025-12-19 08:44",
+            "2025-12-19 21:10",
+            "2025-12-19 21:10",
+            "2025-12-19 22:26",
+            "2025-12-19 22:26",
+            "2025-12-20 00:17",
+            "2025-12-20 00:17",
+            "2025-12-20 19:50",
+            "2025-12-20 19:50",
+            "2025-12-21 04:11",
+            "2025-12-21 04:11",
+            "2025-12-21 05:46",
+            "2025-12-21 05:46",
+            "2025-12-21 10:43",
+            "2025-12-21 10:43",
+            "2025-12-22 14:10",
+            "2025-12-22 14:10",
+            "2025-12-22 15:51",
+            "2025-12-22 15:51",
+            "2025-12-24 07:32",
+            "2025-12-24 07:32",
+            "2025-12-25 00:43",
+            "2025-12-25 00:43",
+            "2025-12-25 04:11",
+            "2025-12-25 04:11",
+            "2025-12-25 09:18",
+            "2025-12-25 09:18",
+            "2025-12-25 15:33",
+            "2025-12-25 15:33",
+            "2025-12-26 03:33",
+            "2025-12-26 03:33",
+            "2025-12-26 15:20",
+            "2025-12-26 15:20",
+            "2025-12-26 18:53",
+            "2025-12-26 18:53",
+            "2025-12-26 20:21",
+            "2025-12-26 20:21",
+            "2025-12-26 21:56",
+            "2025-12-26 21:56",
+            "2025-12-27 15:19",
+            "2025-12-27 15:19",
+            "2025-12-27 19:15",
+            "2025-12-27 19:15",
+            "2025-12-27 20:26",
+            "2025-12-27 20:26",
+            "2025-12-27 21:29",
+            "2025-12-27 21:29",
+            "2025-12-27 22:37",
+            "2025-12-27 22:37",
+            "2025-12-29 05:43",
+            "2025-12-29 05:43",
+            "2025-12-29 23:25",
+            "2025-12-29 23:25",
+            "2025-12-31 19:24",
+            "2025-12-31 19:24",
+            "2025-12-31 21:06",
+            "2025-12-31 21:06",
+            "2026-01-02 13:45",
+            "2026-01-02 13:45",
+            "2026-01-03 20:59",
+            "2026-01-03 20:59",
+            "2026-01-03 21:59",
+            "2026-01-03 21:59",
+            "2026-01-04 00:54",
+            "2026-01-04 00:54",
+            "2026-01-04 04:49",
+            "2026-01-04 04:49",
+            "2026-01-04 08:55",
+            "2026-01-04 08:55",
+            "2026-01-04 19:01",
+            "2026-01-04 19:01",
+            "2026-01-04 22:02",
+            "2026-01-04 22:02",
+            "2026-01-05 04:04",
+            "2026-01-05 04:04",
+            "2026-01-06 01:47",
+            "2026-01-06 01:47",
+            "2026-01-06 03:21",
+            "2026-01-06 03:21",
+            "2026-01-06 11:15",
+            "2026-01-06 11:15",
+            "2026-01-08 11:29",
+            "2026-01-08 11:29",
+            "2026-01-09 08:51",
+            "2026-01-09 08:51",
+            "2026-01-09 10:08",
+            "2026-01-09 10:08",
+            "2026-01-10 07:45",
+            "2026-01-10 07:45",
+            "2026-01-10 08:52",
+            "2026-01-10 08:52",
+            "2026-01-10 20:15",
+            "2026-01-10 20:15",
+          ],
+          datasets: [
+            {
+              label: "Account Balance ($)",
+              data: [
+                30.0, 31.89340000000011, 33.78680000000022, 33.03680000000022,
+                32.28680000000022, 31.53680000000022, 30.78680000000022,
+                33.867400000000266, 36.94800000000031, 37.63420000000041,
+                38.32040000000051, 37.57040000000051, 36.82040000000051,
+                37.31260000000038, 37.80480000000025, 37.05480000000025,
+                36.30480000000025, 35.55480000000025, 34.80480000000025,
+                34.05480000000025, 33.30480000000025, 32.55480000000025,
+                31.80480000000025, 31.05480000000025, 30.30480000000025,
+                32.541200000000025, 34.7775999999998, 34.0275999999998,
+                33.2775999999998, 32.5275999999998, 31.7775999999998,
+                36.28079999999973, 40.78399999999965, 42.69359999999942,
+                44.60319999999919, 43.85319999999919, 43.10319999999919,
+                42.35319999999919, 41.60319999999919, 43.33479999999945,
+                45.0663999999997, 44.3163999999997, 43.5663999999997,
+                42.8163999999997, 42.0663999999997, 41.3163999999997,
+                40.5663999999997, 39.8163999999997, 39.0663999999997,
+                38.3163999999997, 37.5663999999997, 36.8163999999997,
+                36.0663999999997, 35.3163999999997, 34.5663999999997,
+                35.44599999999991, 36.32560000000012, 35.57560000000012,
+                34.82560000000012, 34.07560000000012, 33.32560000000012,
+                33.80600000000013, 34.28640000000014, 35.60880000000034,
+                36.931200000000544, 36.181200000000544, 35.431200000000544,
+                34.681200000000544, 33.931200000000544, 33.181200000000544,
+                32.431200000000544, 34.39540000000053, 36.35960000000051,
+                35.60960000000051, 34.85960000000051, 34.10960000000051,
+                33.35960000000051, 32.60960000000051, 31.859600000000512,
+                34.38900000000068, 36.918400000000844, 39.88340000000099,
+                42.848400000001135, 46.66320000000088, 50.47800000000062,
+                49.72800000000062, 48.97800000000062, 48.22800000000062,
+                47.47800000000062, 46.72800000000062, 45.97800000000062,
+                45.22800000000062, 44.47800000000062, 47.73840000000055,
+                50.998800000000486, 57.4568000000003, 63.91480000000011,
+                63.16480000000011, 62.41480000000011, 61.66480000000011,
+                60.91480000000011, 60.16480000000011, 59.41480000000011,
+                58.66480000000011, 57.91480000000011, 57.16480000000011,
+                56.41480000000011, 55.66480000000011, 54.91480000000011,
+                54.16480000000011, 53.41480000000011, 52.66480000000011,
+                51.91480000000011, 51.16480000000011, 50.41480000000011,
+                49.66480000000011, 48.91480000000011, 48.16480000000011,
+                47.41480000000011, 46.66480000000011, 45.91480000000011,
+                45.16480000000011, 44.41480000000011, 43.66480000000011,
+                42.91480000000011, 44.74660000000004, 46.578399999999974,
+                45.828399999999974, 45.078399999999974, 44.328399999999974,
+                43.578399999999974, 45.4170000000002, 47.25560000000043,
+                46.50560000000043, 45.75560000000043, 45.00560000000043,
+                44.25560000000043, 45.32860000000075, 46.40160000000107,
+                45.65160000000107, 44.90160000000107, 44.15160000000107,
+                43.40160000000107, 42.65160000000107, 41.90160000000107,
+                42.91920000000101, 43.93680000000096, 47.46020000000063,
+                50.98360000000031, 50.23360000000031, 49.48360000000031,
+                48.73360000000031, 47.98360000000031, 47.23360000000031,
+                46.48360000000031, 45.73360000000031, 44.98360000000031,
+                44.23360000000031, 43.48360000000031, 42.73360000000031,
+                41.98360000000031, 42.01360000000024, 42.04360000000017,
+                41.29360000000017, 40.54360000000017, 39.79360000000017,
+                39.04360000000017, 38.29360000000017, 37.54360000000017,
+                38.53040000000039, 39.517200000000614, 38.767200000000614,
+                38.017200000000614, 42.16700000000057, 46.316800000000526,
+                49.280600000000426, 52.244400000000326, 51.494400000000326,
+                50.744400000000326, 49.994400000000326, 49.244400000000326,
+                48.494400000000326, 47.744400000000326, 46.994400000000326,
+                46.244400000000326, 45.494400000000326, 44.744400000000326,
+                45.72500000000038, 46.70560000000043, 48.06820000000045,
+                49.430800000000474, 48.680800000000474, 47.930800000000474,
+                47.180800000000474, 46.430800000000474, 45.680800000000474,
+                44.930800000000474, 44.180800000000474, 43.430800000000474,
+                42.680800000000474, 41.930800000000474, 45.817000000000576,
+                49.70320000000068, 49.711000000000446, 49.718800000000215,
+                48.968800000000215, 48.218800000000215, 48.31820000000046,
+                48.417600000000704, 53.34300000000042, 58.26840000000014,
+                57.51840000000014, 56.76840000000014, 56.01840000000014,
+                55.26840000000014, 61.17039999999982, 67.0723999999995,
+                66.3223999999995, 65.5723999999995, 64.8223999999995,
+                64.0723999999995, 63.322399999999504, 62.572399999999504,
+                61.822399999999504, 61.072399999999504, 62.76559999999957,
+                64.45879999999964, 63.70879999999964, 62.95879999999964,
+                62.20879999999964, 61.45879999999964, 60.70879999999964,
+                59.95879999999964, 61.53579999999968, 63.11279999999972,
+                62.36279999999972, 61.61279999999972, 60.86279999999972,
+                60.11279999999972, 63.65559999999971, 67.1983999999997,
+                66.4483999999997, 65.6983999999997, 71.50279999999987,
+                77.30720000000004, 82.87479999999998, 88.44239999999992,
+                87.69239999999992, 86.94239999999992, 86.19239999999992,
+                85.44239999999992, 88.00720000000003, 90.57200000000013,
+                89.82200000000013, 89.07200000000013, 88.32200000000013,
+                87.57200000000013, 86.82200000000013, 86.07200000000013,
+                85.32200000000013, 84.57200000000013, 90.12860000000002,
+                95.68519999999991, 98.07119999999996, 100.45720000000001,
+                99.70720000000001, 98.95720000000001, 98.20720000000001,
+                97.45720000000001, 96.70720000000001, 95.95720000000001,
+                95.20720000000001, 94.45720000000001, 94.8786, 95.3,
+                97.25020000000004, 99.20040000000007, 99.52540000000008,
+                99.85040000000008, 100.73220000000038, 101.61400000000067,
+                100.86400000000067, 100.11400000000067, 101.01920000000064,
+                101.9244000000006, 102.9330000000009, 103.9416000000012,
+                105.45800000000126, 106.97440000000132, 106.22440000000132,
+                105.47440000000132, 106.06880000000127, 106.66320000000123,
+                107.93800000000118, 109.21280000000114, 108.46280000000114,
+                107.71280000000114, 106.96280000000114, 106.21280000000114,
+                106.49460000000107, 106.776400000001, 106.026400000001,
+                105.276400000001, 107.83340000000098, 110.39040000000095,
+                109.64040000000095, 108.89040000000095, 108.14040000000095,
+                107.39040000000095, 107.40220000000117, 107.4140000000014,
+                106.6640000000014, 105.9140000000014, 107.50820000000166,
+                109.10240000000194, 110.06760000000176, 111.03280000000159,
+                110.28280000000159, 109.53280000000159, 109.62020000000156,
+                109.70760000000153, 110.69120000000147, 111.67480000000141,
+                110.92480000000141, 110.17480000000141, 111.63640000000123,
+                113.09800000000105, 114.58940000000112, 116.08080000000119,
+                115.33080000000119, 114.58080000000119, 116.85060000000122,
+                119.12040000000125, 120.04680000000117, 120.97320000000109,
+                121.82540000000117, 122.67760000000125, 121.92760000000125,
+                121.17760000000125, 120.42760000000125, 119.67760000000125,
+                122.87860000000146, 126.07960000000166, 127.65540000000182,
+                129.231200000002, 128.481200000002, 127.73120000000199,
+                129.84840000000185, 131.9656000000017, 131.2156000000017,
+                130.4656000000017, 131.70480000000168, 132.94400000000167,
+                136.56900000000167, 140.19400000000167, 139.44400000000167,
+                138.69400000000167, 137.94400000000167, 137.19400000000167,
+                139.63680000000164, 142.07960000000162, 141.32960000000162,
+                140.57960000000162, 142.0296000000016, 143.4796000000016,
+                146.16260000000176, 148.84560000000192, 148.09560000000192,
+                147.34560000000192, 146.59560000000192, 145.84560000000192,
+                145.09560000000192, 144.34560000000192, 143.59560000000192,
+                142.84560000000192, 142.09560000000192, 141.34560000000192,
+                145.65320000000202, 149.9608000000021, 149.2108000000021,
+                148.4608000000021, 147.7108000000021, 146.9608000000021,
+                146.2108000000021, 145.4608000000021, 146.435200000002,
+                147.4096000000019, 146.6596000000019, 145.9096000000019,
+                145.87060000000196, 145.83160000000203, 147.62520000000217,
+                149.4188000000023, 148.6688000000023, 147.9188000000023,
+                147.1688000000023, 146.4188000000023, 145.6688000000023,
+                144.9188000000023, 146.15880000000246, 147.3988000000026,
+                146.6488000000026, 145.8988000000026, 146.57300000000282,
+                147.24720000000303, 149.53360000000282, 151.8200000000026,
+                154.60820000000274, 157.39640000000287, 156.64640000000287,
+                155.89640000000287, 156.25260000000304, 156.6088000000032,
+                157.63260000000332, 158.65640000000343, 160.2152000000034,
+                161.77400000000335, 161.02400000000335, 160.27400000000335,
+                160.56260000000321, 160.85120000000308, 160.10120000000308,
+                159.35120000000308, 158.60120000000308, 157.85120000000308,
+                161.48280000000295, 165.11440000000283, 164.36440000000283,
+                163.61440000000283, 165.21000000000265, 166.80560000000247,
+                172.66840000000252, 178.53120000000257, 180.08160000000265,
+                181.63200000000273, 180.88200000000273, 180.13200000000273,
+                182.76760000000272, 185.4032000000027, 184.6532000000027,
+                183.9032000000027, 184.98380000000276, 186.06440000000282,
+                192.68820000000258, 199.31200000000234, 198.56200000000234,
+                197.81200000000234, 199.95480000000234, 202.09760000000233,
+                203.0386000000023, 203.97960000000228, 203.22960000000228,
+                202.47960000000228, 209.39340000000217, 216.30720000000207,
+                219.54720000000222, 222.78720000000237, 226.5204000000022,
+                230.25360000000205, 229.50360000000205, 228.75360000000205,
+                229.4310000000018, 230.10840000000155, 229.35840000000155,
+                228.60840000000155, 227.85840000000155, 227.10840000000155,
+                226.35840000000155, 225.60840000000155, 228.18840000000148,
+                230.7684000000014, 230.72700000000134, 230.68560000000127,
+                231.67200000000105, 232.65840000000082, 232.62600000000077,
+                232.59360000000072, 231.84360000000072, 231.09360000000072,
+                230.34360000000072, 229.59360000000072, 228.84360000000072,
+                228.09360000000072, 227.34360000000072, 226.59360000000072,
+                225.84360000000072, 225.09360000000072, 224.34360000000072,
+                223.59360000000072, 223.97280000000086, 224.352000000001,
+                223.602000000001, 222.852000000001, 223.47320000000096,
+                224.09440000000092, 223.34440000000092, 222.59440000000092,
+                225.58700000000124, 228.57960000000156, 231.47420000000156,
+                234.36880000000156, 233.61880000000156, 232.86880000000156,
+                232.11880000000156, 231.36880000000156, 232.22020000000148,
+                233.0716000000014, 232.3216000000014, 231.5716000000014,
+                230.8216000000014, 230.0716000000014,
+              ],
+              borderColor: "#3498db",
+              backgroundColor: "rgba(52, 152, 219, 0.1)",
+              borderWidth: 2,
+              pointRadius: 0,
+              pointHoverRadius: 4,
+              fill: true,
+              tension: 0.1,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          interaction: { intersect: false, mode: "index" },
+          scales: {
+            x: { display: false },
+            y: { beginAtZero: false, grid: { color: "#f0f0f0" } },
+          },
+          plugins: {
+            legend: { display: false },
+            title: { display: true, text: "Equity Curve", font: { size: 16 } },
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
