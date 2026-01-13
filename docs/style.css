@@ -78,6 +78,7 @@ nav {
 
 .strategy-grid {
   display: grid;
+  /* Desktop Default: Minimum 350px width per card */
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 25px;
 }
@@ -146,7 +147,6 @@ nav {
   width: 100%;
 }
 
-/* Add to bottom of style.css */
 .strategy-select-card {
   text-decoration: none;
   color: inherit;
@@ -169,7 +169,7 @@ nav {
   color: var(--primary);
   font-weight: 600;
 }
-/* Add to bottom of style.css */
+
 .audit-btn {
   display: flex;
   align-items: center;
@@ -178,7 +178,7 @@ nav {
   margin-top: 20px;
   padding: 10px;
   width: 100%;
-  box-sizing: border-box; /* Ensures padding doesn't break width */
+  box-sizing: border-box;
   text-decoration: none;
   color: #4b5563;
   font-size: 0.9rem;
@@ -194,6 +194,7 @@ nav {
   border-color: #d1d5db;
   color: var(--dark);
 }
+
 /* --- ABOUT PAGE STYLES --- */
 
 /* Comparison Table */
@@ -276,25 +277,51 @@ nav {
   background: #ecfdf5;
 }
 
-/* Mobile Optimization for screens smaller than 768px */
+/* =========================================
+   MOBILE OPTIMIZATION (UPDATED)
+   ========================================= */
 @media (max-width: 768px) {
   /* 1. Shrink the giant header */
   h1 {
-    font-size: 2rem; /* Was likely 3.5rem+ */
+    font-size: 2rem !important;
     line-height: 1.2;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
   }
 
-  /* 2. Add breathing room on the sides */
-  body,
+  /* 2. OVERRIDE THE GRID 
+     The original 'minmax(350px, 1fr)' was too wide for mobile.
+     This forces a simple 1-column layout that fits perfectly. */
+  .strategy-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  /* 3. Add breathing room on the sides */
   .container {
     padding-left: 20px;
     padding-right: 20px;
   }
 
-  /* 3. Make the strategy cards feel less "heavy" */
-  .card,
-  .strategy-item {
-    padding: 1.5rem; /* Reduce internal padding if it's too big */
+  /* 4. Make cards more compact */
+  .card {
+    padding: 1.25rem;
+  }
+
+  /* 5. Adjust navigation for small screens */
+  nav {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .portfolio-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .portfolio-summary {
+    width: 100%;
+    box-sizing: border-box; /* Prevents overflow */
+    justify-content: space-around;
   }
 }
